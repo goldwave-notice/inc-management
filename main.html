@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>INC Management System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body { font-family: 'Malgun Gothic', sans-serif; background: #0b0d11; color: #e0e0e0; min-height: 100vh; }
@@ -16,10 +17,12 @@
     .nav-item { display: flex; align-items: center; gap: 12px; padding: 13px 20px; cursor: pointer; color: #888; font-size: 14px; font-weight: 600; transition: 0.2s; border-left: 3px solid transparent; }
     .nav-item:hover { color: #bf953f; background: rgba(191,149,63,0.05); }
     .nav-item.active { color: #bf953f; background: rgba(191,149,63,0.08); border-left-color: #bf953f; }
-    .nav-item .icon { font-size: 18px; width: 24px; text-align: center; }
+    .nav-item i { font-size: 15px; width: 20px; text-align: center; }
+    .nav-item.hidden { display: none; }
     .nav-section { padding: 15px 20px 5px 20px; font-size: 10px; color: #444; letter-spacing: 2px; font-weight: 700; }
-    .logout-btn { padding: 15px 20px; border-top: 1px solid rgba(191,149,63,0.2); font-size: 12px; color: #555; cursor: pointer; text-align: center; transition: 0.2s; }
+    .logout-btn { padding: 15px 20px; border-top: 1px solid rgba(191,149,63,0.2); font-size: 12px; color: #555; cursor: pointer; text-align: center; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
     .logout-btn:hover { color: #e55; }
+    .role-badge { margin: 0 20px 15px; padding: 6px 12px; background: rgba(191,149,63,0.1); border: 1px solid rgba(191,149,63,0.2); border-radius: 8px; text-align: center; font-size: 11px; color: #bf953f; font-weight: 700; }
     .main { margin-left: 240px; padding: 30px; min-height: 100vh; width: calc(100% - 240px); box-sizing: border-box; }
     .page-header { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(191,149,63,0.15); }
     .page-header h1 { font-size: 24px; font-weight: 800; color: #fff; }
@@ -30,7 +33,7 @@
     .stat-card .label { font-size: 12px; color: #666; font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; }
     .stat-card .value { font-size: 32px; font-weight: 900; color: #bf953f; }
     .stat-card .sub { font-size: 12px; color: #555; margin-top: 8px; }
-    .stat-card .icon { font-size: 28px; float: right; margin-top: -5px; }
+    .stat-card .icon { font-size: 24px; float: right; margin-top: -5px; color: rgba(191,149,63,0.3); }
     .section { background: #1a1d23; border: 1px solid rgba(191,149,63,0.15); border-radius: 15px; padding: 25px; margin-bottom: 20px; width: 100%; box-sizing: border-box; }
     .section-title { font-size: 16px; font-weight: 800; color: #bf953f; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(191,149,63,0.1); }
     .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -63,42 +66,43 @@
   </div>
   <nav class="nav-menu">
     <div class="nav-section">MAIN</div>
-    <div class="nav-item active" onclick="showPage('dashboard', this)"><span class="icon">🏠</span> 대시보드</div>
+    <div class="nav-item active" onclick="showPage('dashboard', this)"><i class="fa-solid fa-gauge-high"></i> 대시보드</div>
     <div class="nav-section">고객</div>
-    <div class="nav-item" onclick="showPage('customers', this)"><span class="icon">👥</span> 고객 목록</div>
-    <div class="nav-item" onclick="showPage('contracts', this)"><span class="icon">📋</span> 계약 현황</div>
+    <div class="nav-item admin-only" onclick="showPage('customers', this)"><i class="fa-solid fa-users"></i> 고객 목록</div>
+    <div class="nav-item" onclick="showPage('contracts', this)"><i class="fa-solid fa-file-lines"></i> 계약 현황</div>
     <div class="nav-section">정산</div>
-    <div class="nav-item" onclick="showPage('settlement', this)"><span class="icon">💰</span> 월별 정산</div>
-    <div class="nav-item" onclick="showPage('serverFee', this)"><span class="icon">🖥️</span> 서버비 내역</div>
+    <div class="nav-item" onclick="showPage('settlement', this)"><i class="fa-solid fa-calculator"></i> 월별 정산</div>
+    <div class="nav-item admin-only" onclick="showPage('serverFee', this)"><i class="fa-solid fa-server"></i> 서버비 내역</div>
     <div class="nav-section">보고서</div>
-    <div class="nav-item" onclick="showPage('payslip', this)"><span class="icon">🧾</span> 개발자 명세서</div>
-    <div class="nav-item" onclick="showPage('partner', this)"><span class="icon">📄</span> 파트너 정산서</div>
-    <div class="nav-item" onclick="showPage('report', this)"><span class="icon">📊</span> 성과 보고서</div>
+    <div class="nav-item" onclick="showPage('payslip', this)"><i class="fa-solid fa-receipt"></i> 개발자 명세서</div>
+    <div class="nav-item admin-only" onclick="showPage('partner', this)"><i class="fa-solid fa-handshake"></i> 파트너 정산서</div>
+    <div class="nav-item" onclick="showPage('report', this)"><i class="fa-solid fa-chart-line"></i> 성과 보고서</div>
   </nav>
-  <div class="logout-btn" onclick="logout()">🔓 로그아웃</div>
+  <div class="role-badge" id="role-badge">관리자</div>
+  <div class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</div>
 </div>
 
 <div class="main">
   <div id="page-dashboard" class="page active">
-    <div class="page-header"><h1>🏠 대시보드</h1><p id="today-date"></p></div>
+    <div class="page-header"><h1>대시보드</h1><p id="today-date"></p></div>
     <div class="stats-grid">
-      <div class="stat-card"><div class="label">전체 고객</div><div class="value" id="stat-total">-</div><div class="sub">등록된 전체 회원</div><div class="icon">👥</div></div>
-      <div class="stat-card"><div class="label">운용중 고객</div><div class="value" id="stat-active">-</div><div class="sub">현재 유효 계약</div><div class="icon">✅</div></div>
-      <div class="stat-card"><div class="label">PBC 운용중</div><div class="value" id="stat-pbc">-</div><div class="sub">성과기반 고객</div><div class="icon">📈</div></div>
-      <div class="stat-card"><div class="label">30일 내 만료</div><div class="value" id="stat-expiry" style="color:#ffc800;">-</div><div class="sub">만료 임박 고객</div><div class="icon">⚠️</div></div>
+      <div class="stat-card"><div class="label">전체 고객</div><div class="value" id="stat-total">-</div><div class="sub">등록된 전체 회원</div><div class="icon"><i class="fa-solid fa-users"></i></div></div>
+      <div class="stat-card"><div class="label">운용중 고객</div><div class="value" id="stat-active">-</div><div class="sub">현재 유효 계약</div><div class="icon"><i class="fa-solid fa-circle-check"></i></div></div>
+      <div class="stat-card"><div class="label">PBC 운용중</div><div class="value" id="stat-pbc">-</div><div class="sub">성과기반 고객</div><div class="icon"><i class="fa-solid fa-chart-line"></i></div></div>
+      <div class="stat-card"><div class="label">30일 내 만료</div><div class="value" id="stat-expiry" style="color:#ffc800;">-</div><div class="sub">만료 임박 고객</div><div class="icon"><i class="fa-solid fa-triangle-exclamation"></i></div></div>
     </div>
     <div class="section">
-      <div class="section-title">⚠️ 만료 임박 고객 (30일 이내)</div>
+      <div class="section-title">만료 임박 고객 (30일 이내)</div>
       <div id="expiry-list"><div class="loading">불러오는 중...</div></div>
     </div>
     <div class="section">
-      <div class="section-title">📈 PBC 운용중 고객</div>
+      <div class="section-title">PBC 운용중 고객</div>
       <div id="pbc-list"><div class="loading">불러오는 중...</div></div>
     </div>
   </div>
 
   <div id="page-customers" class="page">
-    <div class="page-header"><h1>👥 고객 목록</h1><p>전체 회원 현황</p></div>
+    <div class="page-header"><h1>고객 목록</h1><p>전체 회원 현황</p></div>
     <div class="section">
       <div style="margin-bottom:15px;">
         <input type="text" id="search-input" placeholder="이름, 회원번호, 등급으로 검색..." style="padding:10px 15px; background:#0b0d11; border:1px solid rgba(191,149,63,0.3); border-radius:8px; color:#fff; width:300px; font-size:13px;" oninput="filterCustomers()">
@@ -113,12 +117,12 @@
   </div>
 
   <div id="page-contracts" class="page">
-    <div class="page-header"><h1>📋 계약 현황</h1><p>계약 만료일 및 잔여일수</p></div>
+    <div class="page-header"><h1>계약 현황</h1><p>계약 만료일 및 잔여일수</p></div>
     <div class="section"><div id="contract-list"><div class="loading">불러오는 중...</div></div></div>
   </div>
 
   <div id="page-settlement" class="page">
-    <div class="page-header"><h1>💰 월별 정산</h1><p>정산 데이터 조회</p></div>
+    <div class="page-header"><h1>월별 정산</h1><p>정산 데이터 조회</p></div>
     <div class="section">
       <div style="margin-bottom:15px;">
         <select id="settlement-month" style="padding:10px; background:#0b0d11; border:1px solid rgba(191,149,63,0.3); border-radius:8px; color:#fff; font-size:13px;">
@@ -135,31 +139,36 @@
   </div>
 
   <div id="page-serverFee" class="page">
-    <div class="page-header"><h1>🖥️ 서버비 내역</h1><p>월별 서버비 납부 현황</p></div>
+    <div class="page-header"><h1>서버비 내역</h1><p>월별 서버비 납부 현황</p></div>
     <div class="section"><div id="serverfee-list"><div class="loading">불러오는 중...</div></div></div>
   </div>
 
   <div id="page-payslip" class="page">
-    <div class="page-header"><h1>🧾 개발자 월급명세서</h1><p>이영웅 개발자 월급명세서</p></div>
+    <div class="page-header"><h1>개발자 월급명세서</h1><p>이영웅 개발자 월급명세서</p></div>
     <div class="section"><div id="payslip-history"><div class="loading">불러오는 중...</div></div></div>
   </div>
 
   <div id="page-partner" class="page">
-    <div class="page-header"><h1>📄 파트너 정산서</h1><p>강민성 · 차윤재 정산서</p></div>
+    <div class="page-header"><h1>파트너 정산서</h1><p>강민성 · 차윤재 정산서</p></div>
     <div class="section"><div id="partner-history"><div class="loading">불러오는 중...</div></div></div>
   </div>
 
   <div id="page-report" class="page">
-    <div class="page-header"><h1>📊 성과 보고서</h1><p>PBC 고객 월별 성과 보고서</p></div>
+    <div class="page-header"><h1>성과 보고서</h1><p>PBC 고객 월별 성과 보고서</p></div>
     <div class="section"><div id="report-history"><div class="loading">불러오는 중...</div></div></div>
   </div>
 </div>
 
 <script>
   const API = 'https://script.google.com/macros/s/AKfycbw1HF_9dmWVS3zINSaup62grWmGszVOx4clmWjMLbicgIn32Ws_cKOkH5w2UeEHteG7pA/exec';
+  const role = sessionStorage.getItem('inc_auth');
 
-  if (sessionStorage.getItem('inc_auth') !== 'true') {
-    window.location.href = 'index.html';
+  if (!role) window.location.href = 'index.html';
+
+  // 역할별 메뉴 제한
+  if (role === 'dev') {
+    document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+    document.getElementById('role-badge').textContent = '개발자';
   }
 
   function logout() {
@@ -187,7 +196,6 @@
     return fetch(url).then(r => r.json());
   }
 
-  // 대시보드
   function loadDashboard() {
     const today = new Date();
     document.getElementById('today-date').textContent = today.getFullYear() + '년 ' + (today.getMonth()+1) + '월 ' + today.getDate() + '일 기준';
@@ -209,7 +217,6 @@
     });
   }
 
-  // 고객목록
   let allCustomers = [];
   function loadCustomers() {
     callAPI('customers').then(function(data) {
@@ -238,7 +245,6 @@
     renderCustomers(filtered);
   }
 
-  // 계약현황
   function loadContracts() {
     callAPI('contracts').then(function(data) {
       let html = '<table class="data-table"><tr><th>구분</th><th>회원명</th><th>등급</th><th>담당자</th><th>계약시작</th><th>계약만료</th><th>잔여일수</th></tr>';
@@ -251,7 +257,6 @@
     });
   }
 
-  // 월별정산
   function loadSettlement() {
     const month = document.getElementById('settlement-month').value;
     document.getElementById('settlement-list').innerHTML = '<div class="loading">불러오는 중...</div>';
@@ -265,7 +270,6 @@
     });
   }
 
-  // 서버비
   function loadServerFee() {
     callAPI('serverFee').then(function(data) {
       let html = '<table class="data-table"><tr><th>정산월</th><th>회원명</th><th>서버비</th><th>입금여부</th><th>국내/국외</th><th>비고</th></tr>';
@@ -277,7 +281,6 @@
     });
   }
 
-  // 명세서이력 공통
   function loadHistory(targetId, filterFn) {
     callAPI('history').then(function(data) {
       const filtered = data.filter(filterFn);
