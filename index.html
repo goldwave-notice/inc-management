@@ -8,7 +8,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
   body { background: #0b0d11; font-family: 'Malgun Gothic', sans-serif; color: #e0e0e0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
   .login-box { background: #1a1d23; border: 1px solid rgba(191,149,63,0.3); border-radius: 20px; padding: 50px 40px; width: 340px; text-align: center; }
-  .logo { width: 60px; margin-bottom: 20px; }
+  .logo { width: 60px; margin-bottom: 20px; filter: brightness(0) invert(1); }
   h1 { color: #bf953f; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; }
   p { color: #666; font-size: 13px; margin-bottom: 30px; }
   .pin-display { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; }
@@ -44,52 +44,47 @@
     <div class="key" onclick="input('9')">9</div>
     <div class="key del" onclick="del()">⌫</div>
     <div class="key" onclick="input('0')">0</div>
-    <div class="key del" onclick="clear()">✕</div>
+    <div class="key del" onclick="clearPin()">✕</div>
   </div>
   <div class="error" id="err">PIN이 올바르지 않습니다</div>
 </div>
 
 <script>
-  const PIN = '1004';
-  const API = 'https://script.google.com/macros/s/AKfycbw1HF_9dmWVS3zINSaup62grWmGszVOx4clmWjMLbicgIn32Ws_cKOkH5w2UeEHteG7pA/exec';
-  
-  // 세션 유지
-  if (sessionStorage.getItem('inc_auth') === 'true') {
-    showMain();
+  const PINS = { '1004': 'admin', '0070': 'dev' };
+
+  if (sessionStorage.getItem('inc_auth') === 'admin' || sessionStorage.getItem('inc_auth') === 'dev') {
+    window.location.href = 'main.html';
   }
-  
+
   let pin = '';
-  
+
   function input(n) {
     if (pin.length >= 4) return;
     pin += n;
     document.getElementById('d' + (pin.length-1)).classList.add('filled');
     if (pin.length === 4) setTimeout(check, 200);
   }
-  
+
   function del() {
     if (pin.length === 0) return;
     document.getElementById('d' + (pin.length-1)).classList.remove('filled');
     pin = pin.slice(0, -1);
   }
-  
-  function clear() {
+
+  function clearPin() {
     pin = '';
     for (let i = 0; i < 4; i++) document.getElementById('d'+i).classList.remove('filled');
   }
-  
+
   function check() {
-    if (pin === PIN) {
-      sessionStorage.setItem('inc_auth', 'true');
-      showMain();
+    const role = PINS[pin];
+    if (role) {
+      sessionStorage.setItem('inc_auth', role);
+      window.location.href = 'main.html';
     } else {
       document.getElementById('err').style.display = 'block';
-      setTimeout(clear, 500);
+      setTimeout(clearPin, 500);
     }
-  }
-  
-  function showMain() {
-    window.location.href = 'main.html';
   }
 </script>
 </body>
