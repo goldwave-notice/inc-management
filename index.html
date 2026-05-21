@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INC Management System</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+  body { background: #0b0d11; font-family: 'Malgun Gothic', sans-serif; color: #e0e0e0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .login-box { background: #1a1d23; border: 1px solid rgba(191,149,63,0.3); border-radius: 20px; padding: 50px 40px; width: 340px; text-align: center; }
+  .logo { width: 60px; margin-bottom: 20px; }
+  h1 { color: #bf953f; font-size: 18px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; }
+  p { color: #666; font-size: 13px; margin-bottom: 30px; }
+  .pin-display { display: flex; justify-content: center; gap: 12px; margin-bottom: 25px; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; background: #333; border: 2px solid #555; transition: 0.2s; }
+  .pin-dot.filled { background: #bf953f; border-color: #bf953f; }
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .key { background: #23272f; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 18px; font-size: 20px; font-weight: 700; color: #fff; cursor: pointer; transition: 0.15s; }
+  .key:active { background: #bf953f; color: #000; transform: scale(0.95); }
+  .key.del { font-size: 14px; color: #888; }
+  .error { color: #e55; font-size: 13px; margin-top: 15px; display: none; }
+</style>
+</head>
+<body>
+<div class="login-box">
+  <img src="https://i.imgur.com/KgkSfzq.png" class="logo">
+  <h1>INC MANAGEMENT</h1>
+  <p>관리자 PIN을 입력해주세요</p>
+  <div class="pin-display">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="keypad">
+    <div class="key" onclick="input('1')">1</div>
+    <div class="key" onclick="input('2')">2</div>
+    <div class="key" onclick="input('3')">3</div>
+    <div class="key" onclick="input('4')">4</div>
+    <div class="key" onclick="input('5')">5</div>
+    <div class="key" onclick="input('6')">6</div>
+    <div class="key" onclick="input('7')">7</div>
+    <div class="key" onclick="input('8')">8</div>
+    <div class="key" onclick="input('9')">9</div>
+    <div class="key del" onclick="del()">⌫</div>
+    <div class="key" onclick="input('0')">0</div>
+    <div class="key del" onclick="clear()">✕</div>
+  </div>
+  <div class="error" id="err">PIN이 올바르지 않습니다</div>
+</div>
+
+<script>
+  const PIN = '1004';
+  const API = 'https://script.google.com/macros/s/AKfycbw1HF_9dmWVS3zINSaup62grWmGszVOx4clmWjMLbicgIn32Ws_cKOkH5w2UeEHteG7pA/exec';
+  
+  // 세션 유지
+  if (sessionStorage.getItem('inc_auth') === 'true') {
+    showMain();
+  }
+  
+  let pin = '';
+  
+  function input(n) {
+    if (pin.length >= 4) return;
+    pin += n;
+    document.getElementById('d' + (pin.length-1)).classList.add('filled');
+    if (pin.length === 4) setTimeout(check, 200);
+  }
+  
+  function del() {
+    if (pin.length === 0) return;
+    document.getElementById('d' + (pin.length-1)).classList.remove('filled');
+    pin = pin.slice(0, -1);
+  }
+  
+  function clear() {
+    pin = '';
+    for (let i = 0; i < 4; i++) document.getElementById('d'+i).classList.remove('filled');
+  }
+  
+  function check() {
+    if (pin === PIN) {
+      sessionStorage.setItem('inc_auth', 'true');
+      showMain();
+    } else {
+      document.getElementById('err').style.display = 'block';
+      setTimeout(clear, 500);
+    }
+  }
+  
+  function showMain() {
+    window.location.href = 'main.html';
+  }
+</script>
+</body>
+</html>
