@@ -163,7 +163,8 @@
   const API = 'https://script.google.com/macros/s/AKfycbw1HF_9dmWVS3zINSaup62grWmGszVOx4clmWjMLbicgIn32Ws_cKOkH5w2UeEHteG7pA/exec';
   const role = sessionStorage.getItem('inc_auth');
 
-  if (!role) window.location.href = 'index.html';
+ const role = sessionStorage.getItem('inc_auth');
+if (role !== 'admin' && role !== 'dev') window.location.href = 'index.html';
 
   // 역할별 메뉴 제한
   if (role === 'dev') {
