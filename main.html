@@ -470,9 +470,11 @@ function callAPI(action, params) {
   }
 
   function loadSettlement() {
-    const month = document.getElementById('settlement-month').value;
-    document.getElementById('settlement-list').innerHTML = '<div class="loading">불러오는 중...</div>';
-    callAPI('settlement', 'month=' + encodeURIComponent(month)).then(function(data) {
+  const month = document.getElementById('settlement-month').value;
+  document.getElementById('settlement-list').innerHTML = '<div class="loading">불러오는 중...</div>';
+  fetch(API + '?action=settlement&month=' + encodeURIComponent(month))
+    .then(r => r.json())
+    .then(function(data) {
       if (data.length === 0) { document.getElementById('settlement-list').innerHTML = '<div class="empty">해당 월 정산 데이터가 없습니다</div>'; return; }
       let html = '<table class="data-table"><tr><th>회원명</th><th>등급</th><th>담당자</th><th>사용료</th><th>성과금</th><th>INC(사용료)</th><th>개발자(사용료)</th><th>INC(PBC)</th><th>개발자(PBC)</th><th>서버비</th></tr>';
       data.forEach(function(r) {
@@ -480,7 +482,7 @@ function callAPI(action, params) {
       });
       document.getElementById('settlement-list').innerHTML = html + '</table>';
     });
-  }
+}
 
   function loadServerFee() {
     callAPI('serverFee').then(function(data) {
