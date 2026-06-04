@@ -95,6 +95,10 @@
     <div class="nav-item" onclick="showPage('payslip', this)"><i class="fa-solid fa-receipt"></i> 개발자 명세서</div>
     <div class="nav-item admin-only" onclick="showPage('partner', this)"><i class="fa-solid fa-handshake"></i> 파트너 정산서</div>
     <div class="nav-item" onclick="showPage('report', this)"><i class="fa-solid fa-chart-line"></i> 성과 보고서</div>
+    <div class="nav-section">분석</div>
+<div class="nav-item admin-only" onclick="showPage('sales', this)"><i class="fa-solid fa-chart-bar"></i> 매출 현황</div>
+<div class="nav-item" onclick="showPage('performance', this)"><i class="fa-solid fa-trophy"></i> 성과 현황</div>
+<div class="nav-item admin-only" onclick="showPage('missingPBC', this)"><i class="fa-solid fa-circle-exclamation"></i> 미수금 현황</div>
   </nav>
   <div class="role-badge" id="role-badge">관리자</div>
   <div class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</div>
@@ -191,6 +195,37 @@
     <div class="page-header"><div><h1>성과 보고서</h1><p>PBC 고객 월별 성과 보고서</p></div></div>
     <div class="section"><div id="report-history"><div class="loading">불러오는 중...</div></div></div>
   </div>
+  <!-- 매출 현황 -->
+<div id="page-sales" class="page">
+  <div class="page-header"><div><h1>매출 현황</h1><p>월별 매출 및 서버비 현황</p></div></div>
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="stat-card"><div class="label">이번달 사용료</div><div class="value" id="sales-fee" style="font-size:22px;">-</div><div class="icon"><i class="fa-solid fa-won-sign"></i></div></div>
+    <div class="stat-card"><div class="label">이번달 PBC 성과금</div><div class="value" id="sales-pbc" style="font-size:22px;">-</div><div class="icon"><i class="fa-solid fa-chart-line"></i></div></div>
+    <div class="stat-card"><div class="label">이번달 서버비</div><div class="value" id="sales-server" style="font-size:22px;color:#ff5050;">-</div><div class="icon"><i class="fa-solid fa-server"></i></div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">월별 매출 현황</div>
+    <canvas id="salesChart" height="100"></canvas>
+  </div>
+</div>
+
+<!-- 성과 현황 -->
+<div id="page-performance" class="page">
+  <div class="page-header"><div><h1>성과 현황</h1><p>회원별 누적 수익률 랭킹</p></div></div>
+  <div class="section">
+    <div class="section-title">누적 수익률 랭킹</div>
+    <div id="performance-list"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- 미수금 현황 -->
+<div id="page-missingPBC" class="page">
+  <div class="page-header"><div><h1>미수금 현황</h1><p>PBC 등급이지만 성과데이터 미입력 회원</p></div></div>
+  <div class="section">
+    <div class="section-title">성과데이터 미입력 PBC 회원</div>
+    <div id="missingpbc-list"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>
 </div>
 
 <!-- 신규 고객 등록 모달 -->
@@ -283,6 +318,9 @@
     if (page === 'payslip') loadPayslipHistory();
     if (page === 'partner') loadPartnerHistory();
     if (page === 'report') loadReportHistory();
+    if (page === 'sales') loadSales();
+    if (page === 'performance') loadPerformance();
+    if (page === 'missingPBC') loadMissingPBC();
   }
 
   function callAPI(action, params) {
@@ -450,7 +488,89 @@
   function loadPayslipHistory() { loadHistory('payslip-history', r => r[2] === '이영웅'); }
   function loadPartnerHistory() { loadHistory('partner-history', r => r[2] === '강민성' || r[2] === '차윤재'); }
   function loadReportHistory() { loadHistory('report-history', r => r[3] === '성과보고서'); }
+ // Chart.js 로드
+const chartScript = document.createElement('script');
+chartScript.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+document.head.appendChild(chartScript);
 
+let salesChartInstance = null;
+
+function loadSales() {
+  callAPI('salesData').then(function(data) {
+    if (!data.length) return;
+
+    // 이번달 (마지막 데이터)
+    const latest = data[data.length-1];
+    document.getElementById('sales-fee').textContent = '₩'+Number(latest.사용료).toLocaleString();
+    document.getElementById('sales-pbc').textContent = '₩'+Number(latest.성과금).toLocaleString();
+    document.getElementById('sales-server').textContent = '₩'+Number(latest.서버비).toLocaleString();
+
+    const labels = data.map(r=>r.월);
+    const 사용료 = data.map(r=>r.사용료);
+    const 성과금 = data.map(r=>r.성과금);
+    const 서버비 = data.map(r=>r.서버비);
+    const 순수익 = data.map((r,i)=>r.사용료+r.성과금-r.서버비);
+
+    if (salesChartInstance) salesChartInstance.destroy();
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    salesChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: '사용료', data: 사용료, backgroundColor: 'rgba(191,149,63,0.7)', stack: 'sales' },
+          { label: 'PBC 성과금', data: 성과금, backgroundColor: 'rgba(191,149,63,0.3)', stack: 'sales' },
+          { label: '서버비', data: 서버비, backgroundColor: 'rgba(255,80,80,0.5)', stack: 'cost' }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#ccc' } } },
+        scales: {
+          x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { ticks: { color: '#888', callback: v => '₩'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
+        }
+      }
+    });
+  });
+}
+
+function loadPerformance() {
+  callAPI('performanceData').then(function(data) {
+    if (!data.length) { document.getElementById('performance-list').innerHTML = '<div class="empty">성과 데이터가 없습니다</div>'; return; }
+    let html = '<table class="data-table"><tr><th>순위</th><th>회원번호</th><th>회원명</th><th>누적 수익금(USD)</th><th>누적 수익률</th><th>운용 개월수</th></tr>';
+    data.forEach(function(r, i) {
+      const rateColor = r.수익률 >= 0 ? '#00ff00' : '#ff5050';
+      html += '<tr>'
+        + '<td><b style="color:#bf953f;">' + (i+1) + '</b></td>'
+        + '<td style="font-size:11px;">' + r.회원번호 + '</td>'
+        + '<td><b>' + r.회원명 + '</b></td>'
+        + '<td>' + r.누적수익금.toFixed(2) + ' USD</td>'
+        + '<td style="color:' + rateColor + ';font-weight:800;">' + (r.수익률>=0?'+':'') + r.수익률 + '%</td>'
+        + '<td>' + r.월수 + '개월</td>'
+        + '</tr>';
+    });
+    document.getElementById('performance-list').innerHTML = html + '</table>';
+  });
+}
+
+function loadMissingPBC() {
+  callAPI('missingPBC').then(function(data) {
+    if (!data.length) { document.getElementById('missingpbc-list').innerHTML = '<div class="empty">모든 PBC 회원의 성과데이터가 입력되어 있습니다 ✅</div>'; return; }
+    let html = '<table class="data-table"><tr><th>회원번호</th><th>회원명</th><th>등급</th><th>담당자</th><th>계약만료일</th><th>상태</th></tr>';
+    data.forEach(function(r) {
+      html += '<tr>'
+        + '<td style="font-size:11px;">' + r[0] + '</td>'
+        + '<td><b>' + r[1] + '</b></td>'
+        + '<td><span class="badge badge-gold">' + r[2] + '</span></td>'
+        + '<td>' + r[3] + '</td>'
+        + '<td>' + r[4] + '</td>'
+        + '<td><span class="badge ' + (r[5]==='유효'?'badge-green':'badge-red') + '">' + r[5] + '</span></td>'
+        + '</tr>';
+    });
+    document.getElementById('missingpbc-list').innerHTML = html + '</table>';
+  });
+}
   loadDashboard();
 </script>
 </body>
