@@ -100,6 +100,7 @@
 <div class="nav-item admin-only" onclick="showPage('sales', this)"><i class="fa-solid fa-chart-bar"></i> 매출 현황</div>
 <div class="nav-item" onclick="showPage('performance', this)"><i class="fa-solid fa-trophy"></i> 성과 현황</div>
 <div class="nav-item admin-only" onclick="showPage('missingPBC', this)"><i class="fa-solid fa-circle-exclamation"></i> 미수금 현황</div>
+<div class="nav-item admin-only" onclick="showPage('paymentHistory', this)"><i class="fa-solid fa-money-bill-transfer"></i> 성과금 입금 기록</div>
   </nav>
   <div class="role-badge" id="role-badge">관리자</div>
   <div class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</div>
@@ -228,6 +229,15 @@
   </div>
 </div>
 </div>
+  
+<!-- 성과금 입금 기록 -->
+<div id="page-paymentHistory" class="page">
+  <div class="page-header"><div><h1>성과금 입금 기록</h1><p>회원별 성과금 입금 현황</p></div></div>
+  <div class="section">
+    <div class="section-title">입금 내역</div>
+    <div id="payment-history-list"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>  
 
 <!-- 신규 고객 등록 모달 -->
 <div class="modal-overlay" id="new-customer-modal">
@@ -322,6 +332,7 @@
     if (page === 'sales') loadSales();
     if (page === 'performance') loadPerformance();
     if (page === 'missingPBC') loadMissingPBC();
+    if (page === 'paymentHistory') loadPaymentHistory();
   }
 
   function callAPI(action, params) {
@@ -568,6 +579,25 @@ function loadMissingPBC() {
         + '</tr>';
     });
     document.getElementById('missingpbc-list').innerHTML = html + '</table>';
+  });
+}
+  function loadPaymentHistory() {
+  callAPI('paymentHistory').then(function(data) {
+    if (!data.length) { document.getElementById('payment-history-list').innerHTML = '<div class="empty">입금 내역이 없습니다</div>'; return; }
+    let html = '<table class="data-table"><tr><th>회원번호</th><th>회원명</th><th>정산월</th><th>입금일</th><th>입금금액(원)</th><th>상태</th><th>성과금총액(원)</th></tr>';
+    data.forEach(function(r) {
+      const done = r[5]==='Complete';
+      html += '<tr>'
+        + '<td style="font-size:11px;">' + r[0] + '</td>'
+        + '<td><b>' + r[1] + '</b></td>'
+        + '<td>' + r[2] + '</td>'
+        + '<td>' + (r[3]||'-') + '</td>'
+        + '<td>' + (r[4]>0?'₩'+Number(r[4]).toLocaleString():'-') + '</td>'
+        + '<td><span class="badge ' + (done?'badge-green':'badge-red') + '">' + (done?'Complete':'미입금') + '</span></td>'
+        + '<td>' + (r[6]>0?'₩'+Number(r[6]).toLocaleString():'-') + '</td>'
+        + '</tr>';
+    });
+    document.getElementById('payment-history-list').innerHTML = html + '</table>';
   });
 }
   loadDashboard();
