@@ -336,11 +336,16 @@
     if (page === 'missingPBC') loadMissingPBC();
     if (page === 'paymentHistory') loadPaymentHistory();
   }
-
+  const cache = {};
   function callAPI(action, params) {
+    const key = action + (params||'');
+    if (cache[key]) return Promise.resolve(cache[key]);
     let url = API + '?action=' + action;
     if (params) url += '&' + params;
-    return fetch(url).then(r => r.json());
+    return fetch(url).then(r => r.json()).then(data => {
+      cache[key] = data;
+      return data;
+      });
   }
 
   function loadDashboard() {
