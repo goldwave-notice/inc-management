@@ -364,10 +364,10 @@
     data.forEach(function(r) {
       const badge = r[6] === '유효' ? 'badge-green' : 'badge-red';
       const hasContract = r[7] && r[7].startsWith('http');
-      const contractBtn = hasContract
-        ? '<span style="color:#bf953f;cursor:pointer;" ondblclick="openContract(\'' + r[7] + '\')"><i class="fa-solid fa-file-pdf"></i> 보기</span>'
+      const contractBtn = hasContract && role === 'admin'
+        ? '<span style="color:#bf953f;cursor:pointer;"><i class="fa-solid fa-file-pdf"></i> 보기</span>'
         : '<span style="color:#444;">-</span>';
-      html += '<tr class="clickable" ondblclick="openContract(\'' + (r[7]||'') + '\')">'
+     html += '<tr class="' + (role==='admin'?'clickable':'') + '" ' + (role==='admin'?'ondblclick="openContract(\'' + (r[7]||'') + '\')"':'') + '>'
         + '<td style="font-size:11px;">' + r[0] + '</td>'
         + '<td><b>' + r[1] + '</b></td>'
         + '<td><span class="badge badge-gold">' + r[2] + '</span></td>'
