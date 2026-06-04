@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>INC Management System</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body { font-family: 'Malgun Gothic', sans-serif; background: #0b0d11; color: #e0e0e0; min-height: 100vh; }
@@ -206,9 +205,12 @@
     <div class="stat-card"><div class="label">이번달 서버비</div><div class="value" id="sales-server" style="font-size:22px;color:#ff5050;">-</div><div class="icon"><i class="fa-solid fa-server"></i></div></div>
   </div>
   <div class="section">
-    <div class="section-title">월별 매출 현황</div>
-    <canvas id="salesChart" height="100"></canvas>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <div class="section-title" style="margin:0; border:none; padding:0;">월별 매출 현황</div>
+    <button id="sales-toggle-btn" class="btn btn-secondary" onclick="toggleSalesView()">📊 그래프로 보기</button>
   </div>
+  <div id="sales-chart-area"></div>
+</div>
 </div>
 
 <!-- 성과 현황 -->
@@ -504,42 +506,83 @@
 
 
 let salesChartInstance = null;
-let chartLoaded = false;
+let salesViewMode = 'table';
+
+function toggleSalesView() {
+  salesViewMode = salesViewMode === 'table' ? 'chart' : 'table';
+  const btn = document.getElementById('sales-toggle-btn');
+  if (salesViewMode === 'chart') {
+    btn.textContent = '📋 테이블로 보기';
+    if (!window.Chart) {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+      s.onload = renderSalesChart;
+      document.head.appendChild(s);
+    } else {
+      renderSalesChart();
+    }
+  } else {
+    btn.textContent = '📊 그래프로 보기';
+    if (salesChartInstance) { salesChartInstance.destroy(); salesChartInstance = null; }
+    renderSalesTable();
+  }
+}
+
+let salesData = [];
 
 function loadSales() {
   callAPI('salesData').then(function(data) {
     if (!data.length) return;
+    salesData = data;
     const latest = data[data.length-1];
     document.getElementById('sales-fee').textContent = '₩'+Number(latest.사용료).toLocaleString();
     document.getElementById('sales-pbc').textContent = '₩'+Number(latest.성과금).toLocaleString();
     document.getElementById('sales-server').textContent = '₩'+Number(latest.서버비).toLocaleString();
+    renderSalesTable();
+  });
+}
 
-    const labels = data.map(r=>r.월);
-    const 사용료 = data.map(r=>r.사용료);
-    const 성과금 = data.map(r=>r.성과금);
-    const 서버비 = data.map(r=>r.서버비);
+function renderSalesTable() {
+  let html = '<table class="data-table"><tr><th>월</th><th>사용료</th><th>PBC 성과금</th><th>서버비</th><th>순수익</th></tr>';
+  salesData.forEach(function(r) {
+    const 순수익 = r.사용료 + r.성과금 - r.서버비;
+    html += '<tr>'
+      + '<td><b>' + r.월 + '</b></td>'
+      + '<td>₩' + Number(r.사용료).toLocaleString() + '</td>'
+      + '<td>₩' + Number(r.성과금).toLocaleString() + '</td>'
+      + '<td style="color:#ff5050;">₩' + Number(r.서버비).toLocaleString() + '</td>'
+      + '<td style="color:#00ff00;font-weight:800;">₩' + Number(순수익).toLocaleString() + '</td>'
+      + '</tr>';
+  });
+  document.getElementById('sales-chart-area').innerHTML = html + '</table>';
+}
 
-    if (salesChartInstance) salesChartInstance.destroy();
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    salesChartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          { label: '사용료', data: 사용료, backgroundColor: 'rgba(191,149,63,0.7)', stack: 'sales' },
-          { label: 'PBC 성과금', data: 성과금, backgroundColor: 'rgba(191,149,63,0.3)', stack: 'sales' },
-          { label: '서버비', data: 서버비, backgroundColor: 'rgba(255,80,80,0.5)', stack: 'cost' }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { labels: { color: '#ccc' } }, tooltip: { callbacks: { label: ctx => '₩' + Number(ctx.raw).toLocaleString() } } },
-        scales: {
-          x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-          y: { ticks: { color: '#888', callback: v => '₩'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
-        }
+function renderSalesChart() {
+  const labels = salesData.map(r=>r.월);
+  const 사용료 = salesData.map(r=>r.사용료);
+  const 성과금 = salesData.map(r=>r.성과금);
+  const 서버비 = salesData.map(r=>r.서버비);
+  document.getElementById('sales-chart-area').innerHTML = '<canvas id="salesChart" height="100"></canvas>';
+  if (salesChartInstance) salesChartInstance.destroy();
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  salesChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: '사용료', data: 사용료, backgroundColor: 'rgba(191,149,63,0.7)', stack: 'sales' },
+        { label: 'PBC 성과금', data: 성과금, backgroundColor: 'rgba(191,149,63,0.3)', stack: 'sales' },
+        { label: '서버비', data: 서버비, backgroundColor: 'rgba(255,80,80,0.5)', stack: 'cost' }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#ccc' } }, tooltip: { callbacks: { label: ctx => '₩'+Number(ctx.raw).toLocaleString() } } },
+      scales: {
+        x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#888', callback: v => '₩'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
       }
-    });
+    }
   });
 }
 
