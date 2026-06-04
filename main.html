@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>INC Management System</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body { font-family: 'Malgun Gothic', sans-serif; background: #0b0d11; color: #e0e0e0; min-height: 100vh; }
@@ -504,12 +504,11 @@
 
 
 let salesChartInstance = null;
+let chartLoaded = false;
 
 function loadSales() {
   callAPI('salesData').then(function(data) {
     if (!data.length) return;
-
-    // 이번달 (마지막 데이터)
     const latest = data[data.length-1];
     document.getElementById('sales-fee').textContent = '₩'+Number(latest.사용료).toLocaleString();
     document.getElementById('sales-pbc').textContent = '₩'+Number(latest.성과금).toLocaleString();
@@ -519,7 +518,6 @@ function loadSales() {
     const 사용료 = data.map(r=>r.사용료);
     const 성과금 = data.map(r=>r.성과금);
     const 서버비 = data.map(r=>r.서버비);
-    const 순수익 = data.map((r,i)=>r.사용료+r.성과금-r.서버비);
 
     if (salesChartInstance) salesChartInstance.destroy();
     const ctx = document.getElementById('salesChart').getContext('2d');
@@ -535,7 +533,7 @@ function loadSales() {
       },
       options: {
         responsive: true,
-        plugins: { legend: { labels: { color: '#ccc' } } },
+        plugins: { legend: { labels: { color: '#ccc' } }, tooltip: { callbacks: { label: ctx => '₩' + Number(ctx.raw).toLocaleString() } } },
         scales: {
           x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
           y: { ticks: { color: '#888', callback: v => '₩'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
