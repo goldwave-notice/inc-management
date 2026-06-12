@@ -8,12 +8,12 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body { font-family: 'Malgun Gothic', sans-serif; background: #0b0d11; color: #e0e0e0; min-height: 100vh; }
-    .sidebar { width: 240px; min-height: 100vh; background: #1a1d23; border-right: 1px solid rgba(191,149,63,0.2); display: flex; flex-direction: column; position: fixed; left: 0; top: 0; z-index: 100; }
+    .sidebar { width: 240px; height: 100vh; background: #1a1d23; border-right: 1px solid rgba(191,149,63,0.2); display: flex; flex-direction: column; position: fixed; left: 0; top: 0; z-index: 100; overflow-y: auto; }
     .sidebar-logo { padding: 25px 20px; border-bottom: 1px solid rgba(191,149,63,0.2); text-align: center; }
     .sidebar-logo img { width: 60px; margin-bottom: 10px; filter: brightness(0) invert(1); }
     .sidebar-logo h2 { font-size: 13px; color: #bf953f; font-weight: 800; letter-spacing: 1px; }
     .sidebar-logo p { font-size: 10px; color: #666; margin-top: 3px; }
-    .nav-menu { flex: 1; padding: 20px 0; }
+    .nav-menu { flex: 1; padding: 20px 0; overflow-y: auto; }
     .nav-item { display: flex; align-items: center; gap: 12px; padding: 13px 20px; cursor: pointer; color: #888; font-size: 14px; font-weight: 600; transition: 0.2s; border-left: 3px solid transparent; }
     .nav-item:hover { color: #bf953f; background: rgba(191,149,63,0.05); }
     .nav-item.active { color: #bf953f; background: rgba(191,149,63,0.08); border-left-color: #bf953f; }
@@ -543,7 +543,8 @@
       sales: loadSales,
       performance: loadPerformance,
       missingPBC: loadMissingPBC,
-      paymentHistory: loadPaymentHistory
+      paymentHistory: loadPaymentHistory,
+      profitMgmt: loadProfitMgmt
     };
     if (loaders[page]) loaders[page]();
   };
@@ -1247,13 +1248,6 @@
     delete cache['profitImages'];
     showToast('✅ 삭제 완료!');
     loadProfitMgmt();
-  };
-
-  // showPage에 profitMgmt 추가
-  const origShowPage = window.showPage;
-  window.showPage = function(page, el) {
-    origShowPage(page, el);
-    if (page === 'profitMgmt') loadProfitMgmt();
   };
 
   // 초기 로드
