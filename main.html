@@ -193,7 +193,13 @@
 
   <!-- 성과 보고서 -->
   <div id="page-report" class="page">
-    <div class="page-header"><div><h1>성과 보고서</h1><p>PBC 고객 월별 성과 보고서</p></div></div>
+    <div class="page-header">
+      <div><h1>성과 보고서</h1><p>PBC 고객 월별 성과 보고서</p></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-primary admin-only" onclick="openReportGenModal('single')"><i class="fa-solid fa-file-circle-plus"></i> 보고서 생성</button>
+        <button class="btn btn-secondary admin-only" onclick="openReportGenModal('bulk')"><i class="fa-solid fa-layer-group"></i> 일괄 생성</button>
+      </div>
+    </div>
     <div class="section"><div id="report-history"><div class="loading">불러오는 중...</div></div></div>
   </div>
 
@@ -376,6 +382,32 @@
     <div class="form-actions">
       <button class="btn btn-secondary" onclick="closePaymentModal()">취소</button>
       <button class="btn btn-primary" onclick="submitPayment()"><i class="fa-solid fa-check"></i> 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 성과 보고서 생성 모달 -->
+<div class="modal-overlay" id="report-gen-modal">
+  <div class="modal" style="width:450px;">
+    <h2><i class="fa-solid fa-file-circle-plus"></i> 성과 보고서 생성</h2>
+    <div id="report-gen-mode-single">
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="form-group"><label>회원명 *</label><input type="text" id="rg-name" placeholder="예: 홍길동"></div>
+        <div class="form-group"><label>정산월 *</label><input type="text" id="rg-month" placeholder="예: 2026.05"></div>
+      </div>
+    </div>
+    <div id="report-gen-mode-bulk" style="display:none;">
+      <div class="form-grid" style="grid-template-columns:1fr;">
+        <div class="form-group"><label>정산월 *</label><input type="text" id="rg-bulk-month" placeholder="예: 2026.05"></div>
+        <p style="font-size:12px;color:#888;margin-top:5px;">해당 월 성과데이터가 있는 전체 회원의 보고서를 일괄 생성합니다.</p>
+      </div>
+    </div>
+    <div id="report-gen-status" style="display:none; text-align:center; padding:20px; color:#bf953f; font-weight:700;">
+      <i class="fa-solid fa-spinner fa-spin"></i> 생성 중... 잠시 기다려주세요
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeReportGenModal()">취소</button>
+      <button class="btn btn-primary" id="report-gen-btn" onclick="submitReportGen()"><i class="fa-solid fa-check"></i> 생성</button>
     </div>
   </div>
 </div>
@@ -934,6 +966,64 @@
     showToast('✅ 입금 기록 추가 완료!');
     closePaymentModal();
     loadPaymentHistory();
+  };
+
+  // ── 성과 보고서 생성 ──────────────────────────────
+  let reportGenMode = 'single';
+
+  window.openReportGenModal = function(mode) {
+    reportGenMode = mode;
+    document.getElementById('report-gen-mode-single').style.display = mode==='single'?'block':'none';
+    document.getElementById('report-gen-mode-bulk').style.display = mode==='bulk'?'block':'none';
+    document.getElementById('report-gen-status').style.display = 'none';
+    document.getElementById('report-gen-btn').style.display = 'inline-block';
+    document.getElementById('report-gen-modal').classList.add('active');
+  };
+
+  window.closeReportGenModal = function() {
+    document.getElementById('report-gen-modal').classList.remove('active');
+  };
+
+  window.submitReportGen = async function() {
+    document.getElementById('report-gen-status').style.display = 'block';
+    document.getElementById('report-gen-btn').style.display = 'none';
+
+    try {
+      let url, res;
+      if (reportGenMode === 'single') {
+        const name = document.getElementById('rg-name').value.trim();
+        const month = document.getElementById('rg-month').value.trim();
+        if (!name || !month) { showToast('❌ 회원명과 정산월을 입력해주세요'); return; }
+        url = APPS_SCRIPT_URL + '?action=generateReport&name=' + encodeURIComponent(name) + '&month=' + encodeURIComponent(month);
+        res = await fetch(url).then(r => r.json());
+        if (res.success) {
+          delete cache['history'];
+          showToast('✅ ' + name + ' ' + month + ' 보고서 생성 완료!');
+          closeReportGenModal();
+          loadReportHistory();
+        } else {
+          showToast('❌ 생성 실패: ' + (res.error||'오류'));
+        }
+      } else {
+        const month = document.getElementById('rg-bulk-month').value.trim();
+        if (!month) { showToast('❌ 정산월을 입력해주세요'); return; }
+        url = APPS_SCRIPT_URL + '?action=generateReportBulk&month=' + encodeURIComponent(month);
+        res = await fetch(url).then(r => r.json());
+        if (res.success) {
+          delete cache['history'];
+          showToast('✅ ' + month + ' 일괄 생성 완료! ' + (res.count||'')+'건');
+          closeReportGenModal();
+          loadReportHistory();
+        } else {
+          showToast('❌ 생성 실패: ' + (res.error||'오류'));
+        }
+      }
+    } catch(e) {
+      showToast('❌ 오류: ' + e.message);
+    } finally {
+      document.getElementById('report-gen-status').style.display = 'none';
+      document.getElementById('report-gen-btn').style.display = 'inline-block';
+    }
   };
 
   // 초기 로드
