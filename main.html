@@ -467,11 +467,11 @@
     <div class="form-grid" style="grid-template-columns:1fr;">
       <div class="form-group">
         <label>날짜 *</label>
-        <input type="date" id="pa-date">
+        <input type="text" id="pa-date" placeholder="예: 2026.06.10">
       </div>
       <div class="form-group">
         <label>imgur 이미지 URL *</label>
-        <input type="text" id="pa-url" placeholder="https://i.imgur.com/xxxxx.jpeg">
+        <input type="text" id="pa-url" placeholder="https://i.imgur.com/xxxxx.jpeg" oninput="previewProfitImage()">
       </div>
       <div class="form-group">
         <label>미리보기</label>
@@ -544,7 +544,9 @@
   window.showPage = function(page, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
+    const pageEl = document.getElementById('page-' + page);
+    if (!pageEl) { console.error('페이지 없음: page-' + page); return; }
+    pageEl.classList.add('active');
     if (el) el.classList.add('active');
     const loaders = {
       dashboard: loadDashboard,
@@ -1177,7 +1179,8 @@
   window.openProfitAddModal = function() {
     // 오늘 날짜 기본값
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('pa-date').value = today;
+    const t = new Date();
+    document.getElementById('pa-date').value = t.getFullYear() + '.' + String(t.getMonth()+1).padStart(2,'0') + '.' + String(t.getDate()).padStart(2,'0');
     document.getElementById('pa-url').value = '';
     document.getElementById('pa-preview').style.display = 'none';
     document.getElementById('profit-add-modal').classList.add('active');
@@ -1188,8 +1191,8 @@
   };
 
   // URL 입력시 미리보기
-  document.getElementById('pa-url').addEventListener('input', function() {
-    const url = this.value.trim();
+  window.previewProfitImage = function() {
+    const url = document.getElementById('pa-url').value.trim();
     const preview = document.getElementById('pa-preview');
     if (url.startsWith('http')) {
       preview.src = url;
@@ -1197,17 +1200,18 @@
     } else {
       preview.style.display = 'none';
     }
-  });
+  };
 
   window.submitProfitAdd = async function() {
     const dateVal = document.getElementById('pa-date').value;
     const url = document.getElementById('pa-url').value.trim();
     if (!dateVal || !url) { showToast('❌ 날짜와 URL을 입력해주세요'); return; }
 
-    const d = new Date(dateVal);
-    const year = d.getFullYear();
-    const month = String(d.getMonth()+1).padStart(2,'0');
-    const day = String(d.getDate()).padStart(2,'0');
+    // yyyy.MM.dd 또는 yyyy-MM-dd 형식 모두 처리
+    const parts = dateVal.replace(/-/g,'.').split('.');
+    const year = parseInt(parts[0]);
+    const month = String(parseInt(parts[1])).padStart(2,'0');
+    const day = String(parseInt(parts[2])).padStart(2,'0');
     const dateStr = year + '.' + month + '.' + day;
     const docId = 'profit_' + year + month + day;
 
