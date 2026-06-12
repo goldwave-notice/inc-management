@@ -98,6 +98,8 @@
     <div class="nav-item" onclick="showPage('performance', this)"><i class="fa-solid fa-trophy"></i> 성과 현황</div>
     <div class="nav-item admin-only" onclick="showPage('missingPBC', this)"><i class="fa-solid fa-circle-exclamation"></i> 미수금 현황</div>
     <div class="nav-item admin-only" onclick="showPage('paymentHistory', this)"><i class="fa-solid fa-money-bill-transfer"></i> 성과금 입금 기록</div>
+    <div class="nav-section">골드웨이브</div>
+    <div class="nav-item admin-only" onclick="showPage('profitMgmt', this)"><i class="fa-solid fa-image"></i> 수익현황 관리</div>
   </nav>
   <div class="role-badge" id="role-badge">관리자</div>
   <div class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</div>
@@ -440,6 +442,31 @@
     <div class="form-actions">
       <button class="btn btn-secondary" onclick="closeReportGenModal()">취소</button>
       <button class="btn btn-primary" id="report-gen-btn" onclick="submitReportGen()"><i class="fa-solid fa-check"></i> 생성</button>
+    </div>
+  </div>
+</div>
+
+<!-- 수익현황 이미지 등록 모달 -->
+<div class="modal-overlay" id="profit-add-modal">
+  <div class="modal" style="width:500px;">
+    <h2><i class="fa-solid fa-image"></i> 수익현황 이미지 등록</h2>
+    <div class="form-grid" style="grid-template-columns:1fr;">
+      <div class="form-group">
+        <label>날짜 *</label>
+        <input type="date" id="pa-date">
+      </div>
+      <div class="form-group">
+        <label>imgur 이미지 URL *</label>
+        <input type="text" id="pa-url" placeholder="https://i.imgur.com/xxxxx.jpeg">
+      </div>
+      <div class="form-group">
+        <label>미리보기</label>
+        <img id="pa-preview" src="" style="display:none; width:100%; border-radius:8px; border:1px solid rgba(191,149,63,0.3); margin-top:5px;">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeProfitAddModal()">취소</button>
+      <button class="btn btn-primary" onclick="submitProfitAdd()"><i class="fa-solid fa-check"></i> 등록</button>
     </div>
   </div>
 </div>
@@ -1129,6 +1156,104 @@
       document.getElementById('report-gen-status').style.display = 'none';
       document.getElementById('report-gen-btn').style.display = 'inline-block';
     }
+  };
+
+  // ── 수익현황 관리 ──────────────────────────────────
+  window.openProfitAddModal = function() {
+    // 오늘 날짜 기본값
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('pa-date').value = today;
+    document.getElementById('pa-url').value = '';
+    document.getElementById('pa-preview').style.display = 'none';
+    document.getElementById('profit-add-modal').classList.add('active');
+  };
+
+  window.closeProfitAddModal = function() {
+    document.getElementById('profit-add-modal').classList.remove('active');
+  };
+
+  // URL 입력시 미리보기
+  document.getElementById('pa-url').addEventListener('input', function() {
+    const url = this.value.trim();
+    const preview = document.getElementById('pa-preview');
+    if (url.startsWith('http')) {
+      preview.src = url;
+      preview.style.display = 'block';
+    } else {
+      preview.style.display = 'none';
+    }
+  });
+
+  window.submitProfitAdd = async function() {
+    const dateVal = document.getElementById('pa-date').value;
+    const url = document.getElementById('pa-url').value.trim();
+    if (!dateVal || !url) { showToast('❌ 날짜와 URL을 입력해주세요'); return; }
+
+    const d = new Date(dateVal);
+    const year = d.getFullYear();
+    const month = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    const dateStr = year + '.' + month + '.' + day;
+    const docId = 'profit_' + year + month + day;
+
+    // 요일 계산
+    const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const dayStr = days[d.getDay()];
+
+    await setDoc(doc(db,'profitImages',docId), {
+      date: dateStr,
+      year: year,
+      month: Number(month),
+      day: Number(day),
+      dayOfWeek: dayStr,
+      imageUrl: url,
+      docId: docId,
+      createdAt: new Date().toISOString()
+    });
+
+    delete cache['profitImages'];
+    showToast('✅ 수익현황 이미지 등록 완료!');
+    closeProfitAddModal();
+    loadProfitMgmt();
+  };
+
+  async function loadProfitMgmt() {
+    const data = await getCached('profitImages', () => getAll('profitImages'));
+    const sorted = data.sort((a,b) => b.docId.localeCompare(a.docId));
+
+    if (!sorted.length) {
+      document.getElementById('profit-mgmt-list').innerHTML = '<div class="empty">등록된 이미지가 없습니다</div>';
+      return;
+    }
+
+    let html = '<table class="data-table"><tr><th>날짜</th><th>요일</th><th>이미지 URL</th><th>미리보기</th><th>삭제</th></tr>';
+    sorted.forEach(r => {
+      html += `<tr>
+        <td><b>${r.date}</b></td>
+        <td>${r.dayOfWeek}</td>
+        <td style="font-size:11px;color:#666;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.imageUrl}</td>
+        <td><img src="${r.imageUrl}" style="width:80px;height:50px;object-fit:cover;border-radius:5px;border:1px solid rgba(191,149,63,0.2);"></td>
+        <td><button class="btn btn-secondary" style="padding:5px 12px;font-size:11px;" onclick="deleteProfitImage('${r.docId}')"><i class="fa-solid fa-trash"></i></button></td>
+      </tr>`;
+    });
+    html += '</table>';
+    document.getElementById('profit-mgmt-list').innerHTML = html;
+  }
+
+  window.deleteProfitImage = async function(docId) {
+    if (!confirm('삭제하시겠습니까?')) return;
+    const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(doc(db,'profitImages',docId));
+    delete cache['profitImages'];
+    showToast('✅ 삭제 완료!');
+    loadProfitMgmt();
+  };
+
+  // showPage에 profitMgmt 추가
+  const origShowPage = window.showPage;
+  window.showPage = function(page, el) {
+    origShowPage(page, el);
+    if (page === 'profitMgmt') loadProfitMgmt();
   };
 
   // 초기 로드
