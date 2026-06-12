@@ -815,6 +815,8 @@
     document.getElementById('pm-name').value = c ? c.회원명 : '';
   };
 
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1HF_9dmWVS3zINSaup62grWmGszVOx4clmWjMLbicgIn32Ws_cKOkH5w2UeEHteG7pA/exec';
+
   // ── 1. 성과 데이터 입력 ────────────────────────────
   window.openPerfModal = function() { document.getElementById('perf-modal').classList.add('active'); };
   window.closePerfModal = function() { document.getElementById('perf-modal').classList.remove('active'); };
@@ -823,8 +825,8 @@
     const month = document.getElementById('p-month').value.trim();
     const name = document.getElementById('p-name').value.trim();
     if (!id || !month) { showToast('❌ 회원번호와 정산월은 필수입니다'); return; }
-    const docId = id.replace(/[\/\.]/g,'_') + '_' + month.replace(/\./g,'');
-    await setDoc(doc(db,'performance',docId), {
+
+    const perfData = {
       회원번호:id, 회원명:name, 정산월:month,
       환율기준일:document.getElementById('p-exdate').value,
       환율:Number(document.getElementById('p-exrate').value)||0,
@@ -840,9 +842,23 @@
       최초입금일:document.getElementById('p-firstdate').value,
       최초환율:Number(document.getElementById('p-firstrate').value)||0,
       초기금액USD:Number(document.getElementById('p-deposit').value)||0
-    });
+    };
+
+    // 1) Firestore 저장
+    const docId = id.replace(/[\/\.]/g,'_') + '_' + month.replace(/\./g,'');
+    await setDoc(doc(db,'performance',docId), perfData);
+
+    // 2) 구글 시트 자동 입력 (Apps Script doPost 호출)
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({action: 'addPerformance', ...perfData}),
+        headers: {'Content-Type': 'application/json'}
+      });
+    } catch(e) { console.warn('시트 동기화 실패:', e); }
+
     delete cache['performance'];
-    showToast('✅ 성과 데이터 저장 완료!');
+    showToast('✅ 성과 데이터 저장 완료! (Firestore + 구글 시트)');
     closePerfModal();
     loadPerformance();
   };
