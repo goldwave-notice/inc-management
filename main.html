@@ -58,8 +58,6 @@
     .empty { text-align: center; padding: 40px; color: #444; font-size: 14px; }
     .expiry-soon { color: #ffc800; font-weight: 700; }
     .expired { color: #ff5050; }
-
-    /* 모달 */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
     .modal-overlay.active { display: flex; }
     .modal { background: #1a1d23; border: 1px solid rgba(191,149,63,0.3); border-radius: 20px; padding: 35px; width: 600px; max-height: 85vh; overflow-y: auto; }
@@ -96,24 +94,22 @@
     <div class="nav-item admin-only" onclick="showPage('partner', this)"><i class="fa-solid fa-handshake"></i> 파트너 정산서</div>
     <div class="nav-item" onclick="showPage('report', this)"><i class="fa-solid fa-chart-line"></i> 성과 보고서</div>
     <div class="nav-section">분석</div>
-<div class="nav-item admin-only" onclick="showPage('sales', this)"><i class="fa-solid fa-chart-bar"></i> 매출 현황</div>
-<div class="nav-item" onclick="showPage('performance', this)"><i class="fa-solid fa-trophy"></i> 성과 현황</div>
-<div class="nav-item admin-only" onclick="showPage('missingPBC', this)"><i class="fa-solid fa-circle-exclamation"></i> 미수금 현황</div>
-<div class="nav-item admin-only" onclick="showPage('paymentHistory', this)"><i class="fa-solid fa-money-bill-transfer"></i> 성과금 입금 기록</div>
+    <div class="nav-item admin-only" onclick="showPage('sales', this)"><i class="fa-solid fa-chart-bar"></i> 매출 현황</div>
+    <div class="nav-item" onclick="showPage('performance', this)"><i class="fa-solid fa-trophy"></i> 성과 현황</div>
+    <div class="nav-item admin-only" onclick="showPage('missingPBC', this)"><i class="fa-solid fa-circle-exclamation"></i> 미수금 현황</div>
+    <div class="nav-item admin-only" onclick="showPage('paymentHistory', this)"><i class="fa-solid fa-money-bill-transfer"></i> 성과금 입금 기록</div>
   </nav>
   <div class="role-badge" id="role-badge">관리자</div>
   <div class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</div>
   <div style="padding:10px 20px; text-align:center; font-size:10px; color:#333; border-top:1px solid rgba(191,149,63,0.1); margin-top:5px;">
-  © 2026 아이노커머스<br>Designed by I Know Commerce
-</div>
+    © 2026 아이노커머스<br>Designed by I Know Commerce
+  </div>
 </div>
 
 <div class="main">
   <!-- 대시보드 -->
   <div id="page-dashboard" class="page active">
-    <div class="page-header">
-      <div><h1>대시보드</h1><p id="today-date"></p></div>
-    </div>
+    <div class="page-header"><div><h1>대시보드</h1><p id="today-date"></p></div></div>
     <div class="stats-grid">
       <div class="stat-card"><div class="label">전체 고객</div><div class="value" id="stat-total">-</div><div class="sub">등록된 전체 회원</div><div class="icon"><i class="fa-solid fa-users"></i></div></div>
       <div class="stat-card"><div class="label">운용중 고객</div><div class="value" id="stat-active">-</div><div class="sub">현재 유효 계약</div><div class="icon"><i class="fa-solid fa-circle-check"></i></div></div>
@@ -161,6 +157,7 @@
     <div class="section">
       <div style="margin-bottom:15px;">
         <select id="settlement-month" style="padding:10px; background:#0b0d11; border:1px solid rgba(191,149,63,0.3); border-radius:8px; color:#fff; font-size:13px;">
+          <option value="2026.06">2026.06</option>
           <option value="2026.05">2026.05</option>
           <option value="2026.04">2026.04</option>
           <option value="2026.03">2026.03</option>
@@ -196,51 +193,52 @@
     <div class="page-header"><div><h1>성과 보고서</h1><p>PBC 고객 월별 성과 보고서</p></div></div>
     <div class="section"><div id="report-history"><div class="loading">불러오는 중...</div></div></div>
   </div>
+
   <!-- 매출 현황 -->
-<div id="page-sales" class="page">
-  <div class="page-header"><div><h1>매출 현황</h1><p>월별 매출 및 서버비 현황</p></div></div>
-  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
-    <div class="stat-card"><div class="label">이번달 사용료</div><div class="value" id="sales-fee" style="font-size:22px;">-</div><div class="icon"><i class="fa-solid fa-won-sign"></i></div></div>
-    <div class="stat-card"><div class="label">이번달 PBC 성과금</div><div class="value" id="sales-pbc" style="font-size:22px;">-</div><div class="icon"><i class="fa-solid fa-chart-line"></i></div></div>
-    <div class="stat-card"><div class="label">이번달 서버비</div><div class="value" id="sales-server" style="font-size:22px;color:#ff5050;">-</div><div class="icon"><i class="fa-solid fa-server"></i></div></div>
+  <div id="page-sales" class="page">
+    <div class="page-header"><div><h1>매출 현황</h1><p>월별 매출 및 서버비 현황</p></div></div>
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="stat-card"><div class="label">이번달 사용료</div><div class="value" id="sales-fee" style="font-size:22px;">-</div><div class="icon"><i class="fa-solid fa-won-sign"></i></div></div>
+      <div class="stat-card"><div class="label">이번달 PBC 성과금</div><div class="value" id="sales-pbc" style="font-size:22px;">-</div><div class="icon"><i class="fa-solid fa-chart-line"></i></div></div>
+      <div class="stat-card"><div class="label">이번달 서버비</div><div class="value" id="sales-server" style="font-size:22px;color:#ff5050;">-</div><div class="icon"><i class="fa-solid fa-server"></i></div></div>
+    </div>
+    <div class="section">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <div class="section-title" style="margin:0; border:none; padding:0;">월별 매출 현황</div>
+        <button id="sales-toggle-btn" class="btn btn-secondary" onclick="toggleSalesView()">📊 그래프로 보기</button>
+      </div>
+      <div id="sales-chart-area"></div>
+    </div>
   </div>
-  <div class="section">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-    <div class="section-title" style="margin:0; border:none; padding:0;">월별 매출 현황</div>
-    <button id="sales-toggle-btn" class="btn btn-secondary" onclick="toggleSalesView()">📊 그래프로 보기</button>
+
+  <!-- 성과 현황 -->
+  <div id="page-performance" class="page">
+    <div class="page-header"><div><h1>성과 현황</h1><p>회원별 누적 수익률 랭킹</p></div></div>
+    <div class="section">
+      <div class="section-title">누적 수익률 랭킹</div>
+      <div id="performance-list"><div class="loading">불러오는 중...</div></div>
+    </div>
   </div>
-  <div id="sales-chart-area"></div>
-</div>
+
+  <!-- 미수금 현황 -->
+  <div id="page-missingPBC" class="page">
+    <div class="page-header"><div><h1>미수금 현황</h1><p>PBC 등급이지만 성과데이터 미입력 회원</p></div></div>
+    <div class="section">
+      <div class="section-title">성과데이터 미입력 PBC 회원</div>
+      <div id="missingpbc-list"><div class="loading">불러오는 중...</div></div>
+    </div>
+  </div>
+
+  <!-- 성과금 입금 기록 -->
+  <div id="page-paymentHistory" class="page">
+    <div class="page-header"><div><h1>성과금 입금 기록</h1><p>회원별 성과금 입금 현황</p></div></div>
+    <div class="section">
+      <div class="section-title">입금 내역</div>
+      <div id="payment-history-list"><div class="loading">불러오는 중...</div></div>
+    </div>
+  </div>
 </div>
 
-<!-- 성과 현황 -->
-<div id="page-performance" class="page">
-  <div class="page-header"><div><h1>성과 현황</h1><p>회원별 누적 수익률 랭킹</p></div></div>
-  <div class="section">
-    <div class="section-title">누적 수익률 랭킹</div>
-    <div id="performance-list"><div class="loading">불러오는 중...</div></div>
-  </div>
-</div>
-
-<!-- 미수금 현황 -->
-<div id="page-missingPBC" class="page">
-  <div class="page-header"><div><h1>미수금 현황</h1><p>PBC 등급이지만 성과데이터 미입력 회원</p></div></div>
-  <div class="section">
-    <div class="section-title">성과데이터 미입력 PBC 회원</div>
-    <div id="missingpbc-list"><div class="loading">불러오는 중...</div></div>
-  </div>
-</div>
-  
-<!-- 성과금 입금 기록 -->
-<div id="page-paymentHistory" class="page">
-  <div class="page-header"><div><h1>성과금 입금 기록</h1><p>회원별 성과금 입금 현황</p></div></div>
-  <div class="section">
-    <div class="section-title">입금 내역</div>
-    <div id="payment-history-list"><div class="loading">불러오는 중...</div></div>
-  </div>
-</div>
-
-</div>
 <!-- 신규 고객 등록 모달 -->
 <div class="modal-overlay" id="new-customer-modal">
   <div class="modal">
@@ -274,16 +272,10 @@
         </select>
       </div>
       <div class="form-group"><label>서버비여부</label>
-        <select id="f-server">
-          <option value="N">N</option>
-          <option value="Y">Y</option>
-        </select>
+        <select id="f-server"><option value="N">N</option><option value="Y">Y</option></select>
       </div>
       <div class="form-group"><label>계약상태</label>
-        <select id="f-status">
-          <option value="유효">유효</option>
-          <option value="만료">만료</option>
-        </select>
+        <select id="f-status"><option value="유효">유효</option><option value="만료">만료</option></select>
       </div>
       <div class="form-group full"><label>비고</label><input type="text" id="f-memo" placeholder="메모"></div>
     </div>
@@ -294,136 +286,381 @@
   </div>
 </div>
 
-<!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
-<script>
-  const API = 'https://script.google.com/macros/s/AKfycbw1HF_9dmWVS3zINSaup62grWmGszVOx4clmWjMLbicgIn32Ws_cKOkH5w2UeEHteG7pA/exec';
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, getDocs, doc, setDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAGCPGRXXNUiiT-mK1y_xLKvCJpz5sHY8Y",
+    authDomain: "inc-management-161be.firebaseapp.com",
+    projectId: "inc-management-161be",
+    storageBucket: "inc-management-161be.firebasestorage.app",
+    messagingSenderId: "1098276603524",
+    appId: "1:1098276603524:web:0ae75899d5b9a2a3c524d1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
   const role = sessionStorage.getItem('inc_auth');
   if (role !== 'admin' && role !== 'dev') window.location.href = 'index.html';
-
   if (role === 'dev') {
     document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
     document.getElementById('role-badge').textContent = '개발자';
   }
 
-  function logout() {
-    sessionStorage.removeItem('inc_auth');
-    window.location.href = 'index.html';
-  }
-
+  // ── 유틸 ──────────────────────────────────────────
   function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.display = 'block';
+    t.textContent = msg; t.style.display = 'block';
     setTimeout(() => t.style.display = 'none', 3000);
   }
+  window.showToast = showToast;
 
-  function showPage(page, el) {
+  function formatDate(str) {
+    if (!str) return '';
+    const d = new Date(str);
+    if (isNaN(d)) return str;
+    return d.getFullYear() + '.' + (d.getMonth()+1) + '.' + d.getDate();
+  }
+
+  // Firestore 전체 컬렉션 읽기
+  async function getAll(col) {
+    const snap = await getDocs(collection(db, col));
+    return snap.docs.map(d => d.data());
+  }
+
+  // ── 캐시 ──────────────────────────────────────────
+  const cache = {};
+  async function getCached(key, fetcher) {
+    if (cache[key]) return cache[key];
+    cache[key] = await fetcher();
+    return cache[key];
+  }
+
+  // ── 페이지 전환 ────────────────────────────────────
+  window.showPage = function(page, el) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('page-' + page).classList.add('active');
     if (el) el.classList.add('active');
-    if (page === 'dashboard') loadDashboard();
-    if (page === 'customers') loadCustomers();
-    if (page === 'contracts') loadContracts();
-    if (page === 'serverFee') loadServerFee();
-    if (page === 'payslip') loadPayslipHistory();
-    if (page === 'partner') loadPartnerHistory();
-    if (page === 'report') loadReportHistory();
-    if (page === 'sales') loadSales();
-    if (page === 'performance') loadPerformance();
-    if (page === 'missingPBC') loadMissingPBC();
-    if (page === 'paymentHistory') loadPaymentHistory();
-  }
-  const cache = {};
-function callAPI(action, params) {
-  const key = action + (params||'');
-  if (action !== 'settlement' && cache[key]) return Promise.resolve(cache[key]);
-  let url = API + '?action=' + action;
-  if (params) url += '&' + params;
-  return fetch(url).then(r => r.json()).then(data => {
-    if (action !== 'settlement') cache[key] = data;
-    return data;
-  });
-}
+    const loaders = {
+      dashboard: loadDashboard,
+      customers: loadCustomers,
+      contracts: loadContracts,
+      serverFee: loadServerFee,
+      payslip: loadPayslipHistory,
+      partner: loadPartnerHistory,
+      report: loadReportHistory,
+      sales: loadSales,
+      performance: loadPerformance,
+      missingPBC: loadMissingPBC,
+      paymentHistory: loadPaymentHistory
+    };
+    if (loaders[page]) loaders[page]();
+  };
 
-  function loadDashboard() {
+  window.logout = function() {
+    sessionStorage.removeItem('inc_auth');
+    window.location.href = 'index.html';
+  };
+
+  // ── 대시보드 ───────────────────────────────────────
+  async function loadDashboard() {
     const today = new Date();
-    document.getElementById('today-date').textContent = today.getFullYear() + '년 ' + (today.getMonth()+1) + '월 ' + today.getDate() + '일 기준';
-    callAPI('dashboard').then(function(data) {
-      document.getElementById('stat-total').textContent = data.total;
-      document.getElementById('stat-active').textContent = data.active;
-      document.getElementById('stat-pbc').textContent = data.pbc;
-      document.getElementById('stat-expiry').textContent = data.expiry;
-      let html = '<table class="data-table"><tr><th>회원명</th><th>등급</th><th>담당자</th><th>만료일</th><th>잔여일수</th></tr>';
-      data.expiryList.forEach(function(r) {
-        html += '<tr><td>' + r[0] + '</td><td><span class="badge badge-gold">' + r[1] + '</span></td><td>' + r[2] + '</td><td class="expiry-soon">' + r[3] + '</td><td class="expiry-soon">' + r[4] + '일</td></tr>';
-      });
-      document.getElementById('expiry-list').innerHTML = data.expiryList.length === 0 ? '<div class="empty">만료 임박 고객이 없습니다</div>' : html + '</table>';
-      let pbcHtml = '<table class="data-table"><tr><th>회원명</th><th>등급</th><th>담당자</th><th>계약만료일</th></tr>';
-      data.pbcList.forEach(function(r) {
-        pbcHtml += '<tr><td>' + r[0] + '</td><td><span class="badge badge-gold">' + r[1] + '</span></td><td>' + r[2] + '</td><td>' + r[3] + '</td></tr>';
-      });
-      document.getElementById('pbc-list').innerHTML = data.pbcList.length === 0 ? '<div class="empty">운용중인 PBC 고객이 없습니다</div>' : pbcHtml + '</table>';
+    document.getElementById('today-date').textContent =
+      today.getFullYear() + '년 ' + (today.getMonth()+1) + '월 ' + today.getDate() + '일 기준';
+
+    const customers = await getCached('customers', () => getAll('customers'));
+    const now = new Date(); now.setHours(0,0,0,0);
+
+    let total=0, active=0, pbc=0, expiry=0;
+    let expiryList=[], pbcList=[];
+
+    customers.forEach(c => {
+      if (!c.회원번호) return; total++;
+      const 만료 = new Date(c.계약만료일.replace(/\./g,'-')); 만료.setHours(0,0,0,0);
+      const 잔여 = Math.ceil((만료-now)/(1000*60*60*24));
+      const 만료표시 = c.계약만료일;
+      if (c.계약상태 === '유효') {
+        active++;
+        if (c.등급 && c.등급.includes('PBC')) { pbc++; pbcList.push([c.회원명, c.등급, c.담당자, 만료표시]); }
+        if (잔여 >= 0 && 잔여 <= 30) { expiry++; expiryList.push([c.회원명, c.등급, c.담당자, 만료표시, 잔여]); }
+      }
     });
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-active').textContent = active;
+    document.getElementById('stat-pbc').textContent = pbc;
+    document.getElementById('stat-expiry').textContent = expiry;
+
+    // 만료 임박
+    let html = '<table class="data-table"><tr><th>회원명</th><th>등급</th><th>담당자</th><th>만료일</th><th>잔여일수</th></tr>';
+    expiryList.forEach(r => {
+      html += `<tr><td>${r[0]}</td><td><span class="badge badge-gold">${r[1]}</span></td><td>${r[2]}</td><td class="expiry-soon">${r[3]}</td><td class="expiry-soon">${r[4]}일</td></tr>`;
+    });
+    document.getElementById('expiry-list').innerHTML = expiryList.length === 0 ? '<div class="empty">만료 임박 고객이 없습니다</div>' : html + '</table>';
+
+    // PBC
+    let pbcHtml = '<table class="data-table"><tr><th>회원명</th><th>등급</th><th>담당자</th><th>계약만료일</th></tr>';
+    pbcList.forEach(r => {
+      pbcHtml += `<tr><td>${r[0]}</td><td><span class="badge badge-gold">${r[1]}</span></td><td>${r[2]}</td><td>${r[3]}</td></tr>`;
+    });
+    document.getElementById('pbc-list').innerHTML = pbcList.length === 0 ? '<div class="empty">운용중인 PBC 고객이 없습니다</div>' : pbcHtml + '</table>';
   }
 
+  // ── 고객 목록 ──────────────────────────────────────
   let allCustomers = [];
-  function loadCustomers() {
-    callAPI('customers').then(function(data) {
-      allCustomers = data;
-      renderCustomers(data);
+  async function loadCustomers() {
+    const data = await getCached('customers', () => getAll('customers'));
+    const now = new Date(); now.setHours(0,0,0,0);
+    allCustomers = data.filter(c => c.회원번호).map(c => {
+      const 만료 = new Date(c.계약만료일.replace(/\./g,'-')); 만료.setHours(0,0,0,0);
+      const 잔여 = Math.ceil((만료-now)/(1000*60*60*24));
+      return [c.회원번호, c.회원명, c.등급, c.담당자, c.계약시작일, c.계약만료일, 잔여<0?'만료':'유효', c.계약서링크||''];
     });
+    renderCustomers(allCustomers);
   }
 
   function renderCustomers(data) {
     let html = '<table class="data-table"><tr><th>회원번호</th><th>회원명</th><th>등급</th><th>담당자</th><th>계약시작</th><th>계약만료</th><th>상태</th><th>계약서</th></tr>';
-    data.forEach(function(r) {
+    data.forEach(r => {
       const badge = r[6] === '유효' ? 'badge-green' : 'badge-red';
       const hasContract = r[7] && r[7].startsWith('http');
       const contractBtn = hasContract && role === 'admin'
-        ? '<span style="color:#bf953f;cursor:pointer;"><i class="fa-solid fa-file-pdf"></i> 보기</span>'
+        ? `<span style="color:#bf953f;cursor:pointer;"><i class="fa-solid fa-file-pdf"></i> 보기</span>`
         : '<span style="color:#444;">-</span>';
-     html += '<tr class="' + (role==='admin'?'clickable':'') + '" ' + (role==='admin'?'ondblclick="openContract(\'' + (r[7]||'') + '\')"':'') + '>'
-        + '<td style="font-size:11px;">' + r[0] + '</td>'
-        + '<td><b>' + r[1] + '</b></td>'
-        + '<td><span class="badge badge-gold">' + r[2] + '</span></td>'
-        + '<td>' + r[3] + '</td>'
-        + '<td>' + r[4] + '</td>'
-        + '<td>' + r[5] + '</td>'
-        + '<td><span class="badge ' + badge + '">' + r[6] + '</span></td>'
-        + '<td>' + contractBtn + '</td>'
-        + '</tr>';
+      html += `<tr class="${role==='admin'?'clickable':''}" ${role==='admin'?`ondblclick="openContract('${r[7]||''}')"`:''}>
+        <td style="font-size:11px;">${r[0]}</td><td><b>${r[1]}</b></td>
+        <td><span class="badge badge-gold">${r[2]}</span></td><td>${r[3]}</td>
+        <td>${r[4]}</td><td>${r[5]}</td>
+        <td><span class="badge ${badge}">${r[6]}</span></td><td>${contractBtn}</td></tr>`;
     });
     document.getElementById('customer-list').innerHTML = data.length === 0 ? '<div class="empty">고객이 없습니다</div>' : html + '</table>';
   }
 
-  function openContract(url) {
+  window.openContract = function(url) {
     if (!url || !url.startsWith('http')) { showToast('❌ 계약서 링크가 없습니다'); return; }
     window.open(url, '_blank');
-  }
+  };
 
-  function filterCustomers() {
+  window.filterCustomers = function() {
     const search = document.getElementById('search-input').value.toLowerCase();
     const status = document.getElementById('status-filter').value;
-    const filtered = allCustomers.filter(function(r) {
-      const matchSearch = !search || r[0].toLowerCase().includes(search) || r[1].toLowerCase().includes(search) || r[2].toLowerCase().includes(search);
-      const matchStatus = !status || r[6] === status;
-      return matchSearch && matchStatus;
+    renderCustomers(allCustomers.filter(r => {
+      const ms = !search || r[0].toLowerCase().includes(search) || r[1].toLowerCase().includes(search) || r[2].toLowerCase().includes(search);
+      return ms && (!status || r[6] === status);
+    }));
+  };
+
+  // ── 계약 현황 ──────────────────────────────────────
+  async function loadContracts() {
+    const data = await getCached('customers', () => getAll('customers'));
+    const now = new Date(); now.setHours(0,0,0,0);
+    const rows = data.filter(c => c.회원번호).map(c => {
+      const 만료 = new Date(c.계약만료일.replace(/\./g,'-')); 만료.setHours(0,0,0,0);
+      const 잔여 = Math.ceil((만료-now)/(1000*60*60*24));
+      const 구분 = 잔여<0?'❌ 만료':잔여<=30?'⚠️ 임박':'✅ 유효';
+      return [구분, c.회원명, c.등급, c.담당자, c.계약시작일, c.계약만료일, 잔여];
+    }).sort((a,b) => {
+      if (a[6]>=0&&a[6]<=30) return -1; if (b[6]>=0&&b[6]<=30) return 1;
+      if (a[6]>=0) return -1; if (b[6]>=0) return 1; return 0;
     });
-    renderCustomers(filtered);
+    let html = '<table class="data-table"><tr><th>구분</th><th>회원명</th><th>등급</th><th>담당자</th><th>계약시작</th><th>계약만료</th><th>잔여일수</th></tr>';
+    rows.forEach(r => {
+      const dc = r[6]<0?'expired':r[6]<=30?'expiry-soon':'';
+      html += `<tr><td>${r[0]}</td><td><b>${r[1]}</b></td><td><span class="badge badge-gold">${r[2]}</span></td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td class="${dc}">${r[6]<0?'만료':r[6]+'일'}</td></tr>`;
+    });
+    document.getElementById('contract-list').innerHTML = html + '</table>';
   }
 
-  // 신규 고객 모달
-  function openNewCustomerModal() {
-    document.getElementById('new-customer-modal').classList.add('active');
-  }
-  function closeNewCustomerModal() {
-    document.getElementById('new-customer-modal').classList.remove('active');
+  // ── 월별 정산 ──────────────────────────────────────
+  window.loadSettlement = async function() {
+    const month = document.getElementById('settlement-month').value;
+    document.getElementById('settlement-list').innerHTML = '<div class="loading">불러오는 중...</div>';
+    const all = await getAll('settlements');
+    const data = all.filter(r => r.정산월 === month);
+    if (!data.length) { document.getElementById('settlement-list').innerHTML = '<div class="empty">해당 월 정산 데이터가 없습니다</div>'; return; }
+    let html = '<table class="data-table"><tr><th>회원명</th><th>등급</th><th>담당자</th><th>사용료</th><th>성과금</th><th>INC(사용료)</th><th>개발자(사용료)</th><th>INC(PBC)</th><th>개발자(PBC)</th><th>서버비</th></tr>';
+    data.forEach(r => {
+      html += `<tr><td><b>${r.회원명}</b></td><td><span class="badge badge-gold">${r.등급}</span></td><td>${r.담당자}</td>
+        <td>${r.프로그램사용료||'-'}</td>
+        <td>${r.성과금>0?'₩'+Number(r.성과금).toLocaleString():'-'}</td>
+        <td>${r.INC사용료>0?'₩'+Number(r.INC사용료).toLocaleString():'-'}</td>
+        <td>${r.개발자사용료>0?'₩'+Number(r.개발자사용료).toLocaleString():'-'}</td>
+        <td>${r.INC성과금>0?'₩'+Number(r.INC성과금).toLocaleString():'-'}</td>
+        <td>${r.개발자사용료>0?'₩'+Number(r.개발자사용료).toLocaleString():'-'}</td>
+        <td>${r.서버비>0?'₩'+Number(r.서버비).toLocaleString():'-'}</td></tr>`;
+    });
+    document.getElementById('settlement-list').innerHTML = html + '</table>';
+  };
+
+  // ── 서버비 ─────────────────────────────────────────
+  async function loadServerFee() {
+    const data = await getCached('serverFees', () => getAll('serverFees'));
+    let html = '<table class="data-table"><tr><th>정산월</th><th>회원명</th><th>서버비</th><th>입금여부</th><th>국내/국외</th><th>비고</th></tr>';
+    data.forEach(r => {
+      const paid = r.입금여부==='Y'||r.입금여부==='y'||r.입금여부==='✅'||r.입금여부==='완납';
+      html += `<tr><td>${r.정산월}</td><td><b>${r.회원명}</b></td><td>₩${Number(r.서버비금액).toLocaleString()}</td>
+        <td><span class="badge ${paid?'badge-green':'badge-red'}">${paid?'완납':'미납'}</span></td>
+        <td>${r.구분||'-'}</td><td>${r.비고||'-'}</td></tr>`;
+    });
+    document.getElementById('serverfee-list').innerHTML = !data.length ? '<div class="empty">서버비 내역이 없습니다</div>' : html + '</table>';
   }
 
-  function submitNewCustomer() {
+  // ── 이력 공통 ──────────────────────────────────────
+  async function loadHistory(targetId, filterFn) {
+    const data = await getCached('history', () => getAll('history'));
+    const filtered = data.filter(filterFn);
+    let html = '<table class="data-table"><tr><th>발행일</th><th>정산월</th><th>수신인</th><th>금액</th><th>링크</th></tr>';
+    filtered.forEach(r => {
+      html += `<tr><td>${r.발행일}</td><td>${r.정산월}</td><td>${r.수신인}</td><td>₩${Number(r.금액).toLocaleString()}</td><td><a href="${r.링크}" target="_blank" style="color:#bf953f;">보기 →</a></td></tr>`;
+    });
+    document.getElementById(targetId).innerHTML = !filtered.length ? '<div class="empty">발행된 내역이 없습니다</div>' : html + '</table>';
+  }
+
+  function loadPayslipHistory() { loadHistory('payslip-history', r => r.수신인 === '이영웅'); }
+  function loadPartnerHistory() { loadHistory('partner-history', r => r.수신인 === '강민성' || r.수신인 === '차윤재'); }
+  function loadReportHistory() { loadHistory('report-history', r => r.종류 === '성과보고서'); }
+
+  // ── 매출 현황 ──────────────────────────────────────
+  let salesData = [];
+  let salesViewMode = 'table';
+
+  async function loadSales() {
+    const settlements = await getCached('settlements', () => getAll('settlements'));
+    const serverFees = await getCached('serverFees', () => getAll('serverFees'));
+
+    const 월별 = {};
+    settlements.forEach(r => {
+      const 월 = r.정산월; if (!월) return;
+      if (!월별[월]) 월별[월] = {월, 사용료:0, 성과금:0, 서버비:0};
+      월별[월].사용료 += Number(r.INC사용료)||0;
+      월별[월].성과금 += Number(r.INC성과금)||0;
+    });
+    serverFees.forEach(r => {
+      if (!r.정산월) return;
+      if (!월별[r.정산월]) 월별[r.정산월] = {월:r.정산월, 사용료:0, 성과금:0, 서버비:0};
+      월별[r.정산월].서버비 += Number(r.서버비금액)||0;
+    });
+
+    salesData = Object.values(월별).sort((a,b) => a.월.localeCompare(b.월));
+    if (!salesData.length) return;
+    const latest = salesData[salesData.length-1];
+    document.getElementById('sales-fee').textContent = '₩'+Number(latest.사용료).toLocaleString();
+    document.getElementById('sales-pbc').textContent = '₩'+Number(latest.성과금).toLocaleString();
+    document.getElementById('sales-server').textContent = '₩'+Number(latest.서버비).toLocaleString();
+    renderSalesTable();
+  }
+
+  function renderSalesTable() {
+    let html = '<table class="data-table"><tr><th>월</th><th>사용료</th><th>PBC 성과금</th><th>서버비</th><th>순수익</th></tr>';
+    salesData.forEach(r => {
+      const 순 = r.사용료 + r.성과금 - r.서버비;
+      html += `<tr><td><b>${r.월}</b></td><td>₩${Number(r.사용료).toLocaleString()}</td><td>₩${Number(r.성과금).toLocaleString()}</td><td style="color:#ff5050;">₩${Number(r.서버비).toLocaleString()}</td><td style="color:#00ff00;font-weight:800;">₩${Number(순).toLocaleString()}</td></tr>`;
+    });
+    document.getElementById('sales-chart-area').innerHTML = html + '</table>';
+  }
+
+  window.toggleSalesView = function() {
+    salesViewMode = salesViewMode === 'table' ? 'chart' : 'table';
+    const btn = document.getElementById('sales-toggle-btn');
+    if (salesViewMode === 'chart') {
+      btn.textContent = '📋 테이블로 보기';
+      if (!window.Chart) {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+        s.onload = renderSalesChart;
+        document.head.appendChild(s);
+      } else renderSalesChart();
+    } else {
+      btn.textContent = '📊 그래프로 보기';
+      if (window._salesChart) { window._salesChart.destroy(); window._salesChart = null; }
+      renderSalesTable();
+    }
+  };
+
+  function renderSalesChart() {
+    document.getElementById('sales-chart-area').innerHTML = '<canvas id="salesChart" height="100"></canvas>';
+    if (window._salesChart) window._salesChart.destroy();
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    window._salesChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: salesData.map(r=>r.월),
+        datasets: [
+          {label:'사용료', data:salesData.map(r=>r.사용료), backgroundColor:'rgba(191,149,63,0.7)', stack:'sales'},
+          {label:'PBC 성과금', data:salesData.map(r=>r.성과금), backgroundColor:'rgba(191,149,63,0.3)', stack:'sales'},
+          {label:'서버비', data:salesData.map(r=>r.서버비), backgroundColor:'rgba(255,80,80,0.5)', stack:'cost'}
+        ]
+      },
+      options: {
+        responsive:true,
+        plugins:{legend:{labels:{color:'#ccc'}}, tooltip:{callbacks:{label:c=>'₩'+Number(c.raw).toLocaleString()}}},
+        scales:{x:{ticks:{color:'#888'},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#888',callback:v=>'₩'+v.toLocaleString()},grid:{color:'rgba(255,255,255,0.05)'}}}
+      }
+    });
+  }
+
+  // ── 성과 현황 ──────────────────────────────────────
+  async function loadPerformance() {
+    const data = await getCached('performance', () => getAll('performance'));
+    const 회원별 = {};
+    data.forEach(r => {
+      if (!r.회원명 || r.회원명==='회원명') return;
+      const n = r.회원명.trim();
+      if (!회원별[n]) 회원별[n] = {회원번호:r.회원번호, 회원명:n, 누적:0, 최초:0, 월수:0};
+      회원별[n].누적 += Number(r.월간수익금USD)||0;
+      if (!회원별[n].최초) 회원별[n].최초 = Number(r.입금금액USD)||0;
+      회원별[n].월수++;
+    });
+    const rows = Object.values(회원별).map(r => ({...r, 수익률: r.최초>0?Math.round(r.누적/r.최초*10000)/100:0}))
+      .sort((a,b)=>b.수익률-a.수익률);
+    if (!rows.length) { document.getElementById('performance-list').innerHTML = '<div class="empty">성과 데이터가 없습니다</div>'; return; }
+    let html = '<table class="data-table"><tr><th>순위</th><th>회원번호</th><th>회원명</th><th>누적 수익금(USD)</th><th>누적 수익률</th><th>운용 개월수</th></tr>';
+    rows.forEach((r,i) => {
+      const c = r.수익률>=0?'#00ff00':'#ff5050';
+      html += `<tr><td><b style="color:#bf953f;">${i+1}</b></td><td style="font-size:11px;">${r.회원번호}</td><td><b>${r.회원명}</b></td><td>${r.누적.toFixed(2)} USD</td><td style="color:${c};font-weight:800;">${r.수익률>=0?'+':''}${r.수익률}%</td><td>${r.월수}개월</td></tr>`;
+    });
+    document.getElementById('performance-list').innerHTML = html + '</table>';
+  }
+
+  // ── 미수금 현황 ────────────────────────────────────
+  async function loadMissingPBC() {
+    const [customers, performance] = await Promise.all([
+      getCached('customers', () => getAll('customers')),
+      getCached('performance', () => getAll('performance'))
+    ]);
+    const 성과번호 = new Set(performance.map(r => r.회원번호));
+    const missing = customers.filter(c => c.등급 && c.등급.includes('PBC') && !성과번호.has(c.회원번호) && c.회원번호);
+    if (!missing.length) { document.getElementById('missingpbc-list').innerHTML = '<div class="empty">모든 PBC 회원의 성과데이터가 입력되어 있습니다 ✅</div>'; return; }
+    let html = '<table class="data-table"><tr><th>회원번호</th><th>회원명</th><th>등급</th><th>담당자</th><th>계약만료일</th><th>상태</th></tr>';
+    missing.forEach(c => {
+      html += `<tr><td style="font-size:11px;">${c.회원번호}</td><td><b>${c.회원명}</b></td><td><span class="badge badge-gold">${c.등급}</span></td><td>${c.담당자}</td><td>${c.계약만료일}</td><td><span class="badge ${c.계약상태==='유효'?'badge-green':'badge-red'}">${c.계약상태}</span></td></tr>`;
+    });
+    document.getElementById('missingpbc-list').innerHTML = html + '</table>';
+  }
+
+  // ── 성과금 입금 기록 ───────────────────────────────
+  async function loadPaymentHistory() {
+    const data = await getCached('payments', () => getAll('payments'));
+    if (!data.length) { document.getElementById('payment-history-list').innerHTML = '<div class="empty">입금 내역이 없습니다</div>'; return; }
+    let html = '<table class="data-table"><tr><th>회원번호</th><th>회원명</th><th>정산월</th><th>입금일</th><th>입금금액(원)</th><th>상태</th><th>성과금총액(원)</th></tr>';
+    data.forEach(r => {
+      const done = r.상태 === 'Complete';
+      html += `<tr><td>${r.회원번호}</td><td><b>${r.회원명}</b></td><td>${r.정산월}</td><td>${r.입금일||'-'}</td><td>${r.입금금액>0?'₩'+Number(r.입금금액).toLocaleString():'-'}</td><td><span class="badge ${done?'badge-green':'badge-red'}">${done?'Complete':'미입금'}</span></td><td>${r.성과금총액>0?'₩'+Number(r.성과금총액).toLocaleString():'-'}</td></tr>`;
+    });
+    document.getElementById('payment-history-list').innerHTML = html + '</table>';
+  }
+
+  // ── 신규 고객 등록 ─────────────────────────────────
+  window.openNewCustomerModal = function() { document.getElementById('new-customer-modal').classList.add('active'); };
+  window.closeNewCustomerModal = function() { document.getElementById('new-customer-modal').classList.remove('active'); };
+
+  window.submitNewCustomer = async function() {
     const id = document.getElementById('f-id').value.trim();
     const name = document.getElementById('f-name').value.trim();
     const grade = document.getElementById('f-grade').value;
@@ -431,223 +668,29 @@ function callAPI(action, params) {
     const end = document.getElementById('f-end').value;
     const manager = document.getElementById('f-manager').value;
     if (!id||!name||!grade||!start||!end||!manager) { showToast('❌ 필수 항목을 입력해주세요'); return; }
-    const params = new URLSearchParams({
-      action: 'addCustomer',
-      id, name,
-      phone: document.getElementById('f-phone').value,
-      grade, db: document.getElementById('f-db').value,
-      period: document.getElementById('f-period').value,
-      start, end,
-      fee: document.getElementById('f-fee').value||0,
-      manager,
-      server: document.getElementById('f-server').value,
-      status: document.getElementById('f-status').value,
-      memo: document.getElementById('f-memo').value
+
+    const docId = id.replace(/[\/\.]/g,'_');
+    await setDoc(doc(db,'customers',docId), {
+      회원번호: id, 회원명: name,
+      연락처: document.getElementById('f-phone').value,
+      등급: grade, DB: document.getElementById('f-db').value,
+      계약기간: document.getElementById('f-period').value,
+      계약시작일: formatDate(start), 계약만료일: formatDate(end),
+      프로그램사용료: Number(document.getElementById('f-fee').value)||0,
+      담당자: manager,
+      서버비여부: document.getElementById('f-server').value,
+      계약상태: document.getElementById('f-status').value,
+      비고: document.getElementById('f-memo').value,
+      이전회원번호:'', 서버비용:'', 결제현황:'', 종류:'', 계약서링크:''
     });
-    fetch(API + '?' + params.toString())
-      .then(r => r.json())
-      .then(function(res) {
-        if (res.success) {
-          showToast('✅ 신규 고객 등록 완료!');
-          closeNewCustomerModal();
-          loadCustomers();
-        } else {
-          showToast('❌ 등록 실패: ' + (res.error||'알 수 없는 오류'));
-        }
-      });
-  }
 
-  function loadContracts() {
-    callAPI('contracts').then(function(data) {
-      let html = '<table class="data-table"><tr><th>구분</th><th>회원명</th><th>등급</th><th>담당자</th><th>계약시작</th><th>계약만료</th><th>잔여일수</th></tr>';
-      data.forEach(function(r) {
-        const dayClass = r[6] < 0 ? 'expired' : r[6] <= 30 ? 'expiry-soon' : '';
-        const dayText = r[6] < 0 ? '만료' : r[6] + '일';
-        html += '<tr><td>' + r[0] + '</td><td><b>' + r[1] + '</b></td><td><span class="badge badge-gold">' + r[2] + '</span></td><td>' + r[3] + '</td><td>' + r[4] + '</td><td>' + r[5] + '</td><td class="' + dayClass + '">' + dayText + '</td></tr>';
-      });
-      document.getElementById('contract-list').innerHTML = html + '</table>';
-    });
-  }
+    delete cache['customers'];
+    showToast('✅ 신규 고객 등록 완료!');
+    closeNewCustomerModal();
+    loadCustomers();
+  };
 
-  function loadSettlement() {
-  const month = document.getElementById('settlement-month').value;
-  document.getElementById('settlement-list').innerHTML = '<div class="loading">불러오는 중...</div>';
-  fetch(API + '?action=settlement&month=' + encodeURIComponent(month))
-    .then(r => r.json())
-    .then(function(data) {
-      if (data.length === 0) { document.getElementById('settlement-list').innerHTML = '<div class="empty">해당 월 정산 데이터가 없습니다</div>'; return; }
-      let html = '<table class="data-table"><tr><th>회원명</th><th>등급</th><th>담당자</th><th>사용료</th><th>성과금</th><th>INC(사용료)</th><th>개발자(사용료)</th><th>INC(PBC)</th><th>개발자(PBC)</th><th>서버비</th></tr>';
-      data.forEach(function(r) {
-        html += '<tr><td><b>' + r[4] + '</b></td><td><span class="badge badge-gold">' + r[5] + '</span></td><td>' + r[6] + '</td><td>' + (r[7]||'-') + '</td><td>' + (r[8]>0?'₩'+Number(r[8]).toLocaleString():'-') + '</td><td>' + (r[10]>0?'₩'+Number(r[10]).toLocaleString():'-') + '</td><td>' + (r[11]>0?'₩'+Number(r[11]).toLocaleString():'-') + '</td><td>' + (r[12]>0?'₩'+Number(r[12]).toLocaleString():'-') + '</td><td>' + (r[13]>0?'₩'+Number(r[13]).toLocaleString():'-') + '</td><td>' + (r[16]>0?'₩'+Number(r[16]).toLocaleString():'-') + '</td></tr>';
-      });
-      document.getElementById('settlement-list').innerHTML = html + '</table>';
-    });
-}
-
-  function loadServerFee() {
-    callAPI('serverFee').then(function(data) {
-      let html = '<table class="data-table"><tr><th>정산월</th><th>회원명</th><th>서버비</th><th>입금여부</th><th>국내/국외</th><th>비고</th></tr>';
-      data.forEach(function(r) {
-        const paid = r[4]==='Y'||r[4]==='y'||r[4]==='✅'||r[4]==='완납';
-        html += '<tr><td>' + r[0] + '</td><td><b>' + r[2] + '</b></td><td>₩' + Number(r[3]).toLocaleString() + '</td><td><span class="badge ' + (paid?'badge-green':'badge-red') + '">' + (paid?'완납':'미납') + '</span></td><td>' + (r[5]||'-') + '</td><td>' + (r[6]||'-') + '</td></tr>';
-      });
-      document.getElementById('serverfee-list').innerHTML = data.length === 0 ? '<div class="empty">서버비 내역이 없습니다</div>' : html + '</table>';
-    });
-  }
-
-  function loadHistory(targetId, filterFn) {
-    callAPI('history').then(function(data) {
-      const filtered = data.filter(filterFn);
-      let html = '<table class="data-table"><tr><th>발행일</th><th>정산월</th><th>수신인</th><th>금액</th><th>링크</th></tr>';
-      filtered.forEach(function(r) {
-        html += '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td>' + r[2] + '</td><td>₩' + Number(r[4]).toLocaleString() + '</td><td><a href="' + r[5] + '" target="_blank" style="color:#bf953f;">보기 →</a></td></tr>';
-      });
-      document.getElementById(targetId).innerHTML = filtered.length === 0 ? '<div class="empty">발행된 내역이 없습니다</div>' : html + '</table>';
-    });
-  }
-
-  function loadPayslipHistory() { loadHistory('payslip-history', r => r[2] === '이영웅'); }
-  function loadPartnerHistory() { loadHistory('partner-history', r => r[2] === '강민성' || r[2] === '차윤재'); }
-  function loadReportHistory() { loadHistory('report-history', r => r[3] === '성과보고서'); }
- // Chart.js 로드
-
-
-let salesChartInstance = null;
-let salesViewMode = 'table';
-
-function toggleSalesView() {
-  salesViewMode = salesViewMode === 'table' ? 'chart' : 'table';
-  const btn = document.getElementById('sales-toggle-btn');
-  if (salesViewMode === 'chart') {
-    btn.textContent = '📋 테이블로 보기';
-    if (!window.Chart) {
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
-      s.onload = renderSalesChart;
-      document.head.appendChild(s);
-    } else {
-      renderSalesChart();
-    }
-  } else {
-    btn.textContent = '📊 그래프로 보기';
-    if (salesChartInstance) { salesChartInstance.destroy(); salesChartInstance = null; }
-    renderSalesTable();
-  }
-}
-
-let salesData = [];
-
-function loadSales() {
-  callAPI('salesData').then(function(data) {
-    if (!data.length) return;
-    salesData = data;
-    const latest = data[data.length-1];
-    document.getElementById('sales-fee').textContent = '₩'+Number(latest.사용료).toLocaleString();
-    document.getElementById('sales-pbc').textContent = '₩'+Number(latest.성과금).toLocaleString();
-    document.getElementById('sales-server').textContent = '₩'+Number(latest.서버비).toLocaleString();
-    renderSalesTable();
-  });
-}
-
-function renderSalesTable() {
-  let html = '<table class="data-table"><tr><th>월</th><th>사용료</th><th>PBC 성과금</th><th>서버비</th><th>순수익</th></tr>';
-  salesData.forEach(function(r) {
-    const 순수익 = r.사용료 + r.성과금 - r.서버비;
-    html += '<tr>'
-      + '<td><b>' + r.월 + '</b></td>'
-      + '<td>₩' + Number(r.사용료).toLocaleString() + '</td>'
-      + '<td>₩' + Number(r.성과금).toLocaleString() + '</td>'
-      + '<td style="color:#ff5050;">₩' + Number(r.서버비).toLocaleString() + '</td>'
-      + '<td style="color:#00ff00;font-weight:800;">₩' + Number(순수익).toLocaleString() + '</td>'
-      + '</tr>';
-  });
-  document.getElementById('sales-chart-area').innerHTML = html + '</table>';
-}
-
-function renderSalesChart() {
-  const labels = salesData.map(r=>r.월);
-  const 사용료 = salesData.map(r=>r.사용료);
-  const 성과금 = salesData.map(r=>r.성과금);
-  const 서버비 = salesData.map(r=>r.서버비);
-  document.getElementById('sales-chart-area').innerHTML = '<canvas id="salesChart" height="100"></canvas>';
-  if (salesChartInstance) salesChartInstance.destroy();
-  const ctx = document.getElementById('salesChart').getContext('2d');
-  salesChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [
-        { label: '사용료', data: 사용료, backgroundColor: 'rgba(191,149,63,0.7)', stack: 'sales' },
-        { label: 'PBC 성과금', data: 성과금, backgroundColor: 'rgba(191,149,63,0.3)', stack: 'sales' },
-        { label: '서버비', data: 서버비, backgroundColor: 'rgba(255,80,80,0.5)', stack: 'cost' }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { labels: { color: '#ccc' } }, tooltip: { callbacks: { label: ctx => '₩'+Number(ctx.raw).toLocaleString() } } },
-      scales: {
-        x: { ticks: { color: '#888' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-        y: { ticks: { color: '#888', callback: v => '₩'+v.toLocaleString() }, grid: { color: 'rgba(255,255,255,0.05)' } }
-      }
-    }
-  });
-}
-
-function loadPerformance() {
-  callAPI('performanceData').then(function(data) {
-    if (!data.length) { document.getElementById('performance-list').innerHTML = '<div class="empty">성과 데이터가 없습니다</div>'; return; }
-    let html = '<table class="data-table"><tr><th>순위</th><th>회원번호</th><th>회원명</th><th>누적 수익금(USD)</th><th>누적 수익률</th><th>운용 개월수</th></tr>';
-    data.forEach(function(r, i) {
-      const rateColor = r.수익률 >= 0 ? '#00ff00' : '#ff5050';
-      html += '<tr>'
-        + '<td><b style="color:#bf953f;">' + (i+1) + '</b></td>'
-        + '<td style="font-size:11px;">' + r.회원번호 + '</td>'
-        + '<td><b>' + r.회원명 + '</b></td>'
-        + '<td>' + r.누적수익금.toFixed(2) + ' USD</td>'
-        + '<td style="color:' + rateColor + ';font-weight:800;">' + (r.수익률>=0?'+':'') + r.수익률 + '%</td>'
-        + '<td>' + r.월수 + '개월</td>'
-        + '</tr>';
-    });
-    document.getElementById('performance-list').innerHTML = html + '</table>';
-  });
-}
-
-function loadMissingPBC() {
-  callAPI('missingPBC').then(function(data) {
-    if (!data.length) { document.getElementById('missingpbc-list').innerHTML = '<div class="empty">모든 PBC 회원의 성과데이터가 입력되어 있습니다 ✅</div>'; return; }
-    let html = '<table class="data-table"><tr><th>회원번호</th><th>회원명</th><th>등급</th><th>담당자</th><th>계약만료일</th><th>상태</th></tr>';
-    data.forEach(function(r) {
-      html += '<tr>'
-        + '<td style="font-size:11px;">' + r[0] + '</td>'
-        + '<td><b>' + r[1] + '</b></td>'
-        + '<td><span class="badge badge-gold">' + r[2] + '</span></td>'
-        + '<td>' + r[3] + '</td>'
-        + '<td>' + r[4] + '</td>'
-        + '<td><span class="badge ' + (r[5]==='유효'?'badge-green':'badge-red') + '">' + r[5] + '</span></td>'
-        + '</tr>';
-    });
-    document.getElementById('missingpbc-list').innerHTML = html + '</table>';
-  });
-}
-  function loadPaymentHistory() {
-  callAPI('paymentHistory').then(function(data) {
-    if (!data.length) { document.getElementById('payment-history-list').innerHTML = '<div class="empty">입금 내역이 없습니다</div>'; return; }
-    let html = '<table class="data-table"><tr><th>회원번호</th><th>회원명</th><th>정산월</th><th>입금일</th><th>입금금액(원)</th><th>상태</th><th>성과금총액(원)</th></tr>';
-    data.forEach(function(r) {
-      const done = r[5]==='Complete';
-      html += '<tr>'
-        + '<td>' + r[0] + '</td>'
-        + '<td><b>' + r[1] + '</b></td>'
-        + '<td>' + r[2] + '</td>'
-        + '<td>' + (r[3]||'-') + '</td>'
-        + '<td>' + (r[4]>0?'₩'+Number(r[4]).toLocaleString():'-') + '</td>'
-        + '<td><span class="badge ' + (done?'badge-green':'badge-red') + '">' + (done?'Complete':'미입금') + '</span></td>'
-        + '<td>' + (r[6]>0?'₩'+Number(r[6]).toLocaleString():'-') + '</td>'
-        + '</tr>';
-    });
-    document.getElementById('payment-history-list').innerHTML = html + '</table>';
-  });
-}
+  // 초기 로드
   loadDashboard();
 </script>
 </body>
