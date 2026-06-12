@@ -194,13 +194,46 @@
   <!-- 성과 보고서 -->
   <div id="page-report" class="page">
     <div class="page-header">
-      <div><h1>성과 보고서</h1><p>PBC 고객 월별 성과 보고서</p></div>
+      <div><h1>성과 보고서</h1><p>성과데이터 입력 → 보고서 생성 → 링크 조회</p></div>
       <div style="display:flex;gap:10px;">
+        <button class="btn btn-secondary admin-only" onclick="showReportTab('input')"><i class="fa-solid fa-table"></i> 성과데이터 입력</button>
         <button class="btn btn-primary admin-only" onclick="openReportGenModal('single')"><i class="fa-solid fa-file-circle-plus"></i> 보고서 생성</button>
         <button class="btn btn-secondary admin-only" onclick="openReportGenModal('bulk')"><i class="fa-solid fa-layer-group"></i> 일괄 생성</button>
       </div>
     </div>
-    <div class="section"><div id="report-history"><div class="loading">불러오는 중...</div></div></div>
+
+    <!-- 성과데이터 입력 인라인 폼 -->
+    <div id="report-input-section" class="section" style="display:none;">
+      <div class="section-title">📋 성과데이터 입력</div>
+      <div class="form-grid">
+        <div class="form-group"><label>회원번호 *</label><input type="text" id="ri-id" placeholder="회원번호 입력" oninput="autoFillReportName()"></div>
+        <div class="form-group"><label>회원명</label><input type="text" id="ri-name" placeholder="자동입력" readonly style="background:#111;color:#888;"></div>
+        <div class="form-group"><label>정산월 *</label><input type="text" id="ri-month" placeholder="예: 2026.05"></div>
+        <div class="form-group"><label>환율기준일</label><input type="text" id="ri-exdate" placeholder="예: 2026.05.31"></div>
+        <div class="form-group"><label>환율 (원/USD)</label><input type="number" id="ri-exrate" placeholder="1450"></div>
+        <div class="form-group"><label>입금금액 (USD)</label><input type="number" id="ri-deposit" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>지급크레딧 (USD)</label><input type="number" id="ri-credit" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>보너스+입금합계 (USD)</label><input type="number" id="ri-total" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>당월말잔고 (USD)</label><input type="number" id="ri-balance" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>월간수익률 (%)</label><input type="number" id="ri-rate" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>월간수익금 (USD)</label><input type="number" id="ri-profit" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>거래횟수</label><input type="number" id="ri-trades" placeholder="0"></div>
+        <div class="form-group"><label>승률 (%)</label><input type="number" id="ri-winrate" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>MDD (%)</label><input type="number" id="ri-mdd" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>최초입금일</label><input type="text" id="ri-firstdate" placeholder="예: 2026.01.13"></div>
+        <div class="form-group"><label>최초환율</label><input type="number" id="ri-firstrate" placeholder="0"></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">
+        <button class="btn btn-secondary" onclick="showReportTab('history')">취소</button>
+        <button class="btn btn-primary" onclick="submitReportInput()"><i class="fa-solid fa-check"></i> 저장 후 보고서 바로 생성</button>
+        <button class="btn btn-secondary" onclick="submitReportInputOnly()"><i class="fa-solid fa-floppy-disk"></i> 저장만</button>
+      </div>
+    </div>
+
+    <!-- 보고서 목록 -->
+    <div id="report-history-section" class="section">
+      <div id="report-history"><div class="loading">불러오는 중...</div></div>
+    </div>
   </div>
 
   <!-- 매출 현황 -->
@@ -224,7 +257,6 @@
   <div id="page-performance" class="page">
     <div class="page-header">
       <div><h1>성과 현황</h1><p>회원별 누적 수익률 랭킹</p></div>
-      <button class="btn btn-primary admin-only" onclick="openPerfModal()"><i class="fa-solid fa-plus"></i> 성과 데이터 입력</button>
     </div>
     <div class="section">
       <div class="section-title">누적 수익률 랭킹</div>
@@ -967,6 +999,79 @@
     closePaymentModal();
     loadPaymentHistory();
   };
+
+  // ── 성과 보고서 탭 전환 ────────────────────────────
+  window.showReportTab = function(tab) {
+    const inputSection = document.getElementById('report-input-section');
+    const historySection = document.getElementById('report-history-section');
+    if (tab === 'input') {
+      inputSection.style.display = 'block';
+      historySection.style.display = 'none';
+    } else {
+      inputSection.style.display = 'none';
+      historySection.style.display = 'block';
+    }
+  };
+
+  window.autoFillReportName = async function() {
+    const c = await getCustomerByID(document.getElementById('ri-id').value);
+    document.getElementById('ri-name').value = c ? c.회원명 : '';
+  };
+
+  window.submitReportInputOnly = async function() {
+    const id = document.getElementById('ri-id').value.trim();
+    const month = document.getElementById('ri-month').value.trim();
+    const name = document.getElementById('ri-name').value.trim();
+    if (!id || !month) { showToast('❌ 회원번호와 정산월은 필수입니다'); return; }
+    await saveReportData(id, name, month);
+    showToast('✅ 성과데이터 저장 완료!');
+    showReportTab('history');
+    loadReportHistory();
+  };
+
+  window.submitReportInput = async function() {
+    const id = document.getElementById('ri-id').value.trim();
+    const month = document.getElementById('ri-month').value.trim();
+    const name = document.getElementById('ri-name').value.trim();
+    if (!id || !month) { showToast('❌ 회원번호와 정산월은 필수입니다'); return; }
+    await saveReportData(id, name, month);
+    // 저장 후 바로 보고서 생성
+    document.getElementById('rg-name').value = name;
+    document.getElementById('rg-month').value = month;
+    showToast('✅ 데이터 저장! 보고서 생성 중...');
+    showReportTab('history');
+    await submitReportGen();
+  };
+
+  async function saveReportData(id, name, month) {
+    const perfData = {
+      회원번호:id, 회원명:name, 정산월:month,
+      환율기준일:document.getElementById('ri-exdate').value,
+      환율:Number(document.getElementById('ri-exrate').value)||0,
+      입금금액USD:Number(document.getElementById('ri-deposit').value)||0,
+      지급크레딧USD:Number(document.getElementById('ri-credit').value)||0,
+      보너스입금합계USD:Number(document.getElementById('ri-total').value)||0,
+      당월말잔고USD:Number(document.getElementById('ri-balance').value)||0,
+      월간수익률:Number(document.getElementById('ri-rate').value)||0,
+      월간수익금USD:Number(document.getElementById('ri-profit').value)||0,
+      거래횟수:Number(document.getElementById('ri-trades').value)||0,
+      승률:Number(document.getElementById('ri-winrate').value)||0,
+      MDD:Number(document.getElementById('ri-mdd').value)||0,
+      최초입금일:document.getElementById('ri-firstdate').value,
+      최초환율:Number(document.getElementById('ri-firstrate').value)||0,
+      초기금액USD:Number(document.getElementById('ri-deposit').value)||0
+    };
+    const docId = id.replace(/[\/\.]/g,'_') + '_' + month.replace(/\./g,'');
+    await setDoc(doc(db,'performance',docId), perfData);
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method:'POST',
+        body:JSON.stringify({action:'addPerformance',...perfData}),
+        headers:{'Content-Type':'application/json'}
+      });
+    } catch(e) { console.warn('시트 동기화 실패:', e); }
+    delete cache['performance'];
+  }
 
   // ── 성과 보고서 생성 ──────────────────────────────
   let reportGenMode = 'single';
