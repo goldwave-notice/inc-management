@@ -172,7 +172,10 @@
 
   <!-- 서버비 -->
   <div id="page-serverFee" class="page">
-    <div class="page-header"><div><h1>서버비 내역</h1><p>월별 서버비 납부 현황</p></div></div>
+    <div class="page-header">
+      <div><h1>서버비 내역</h1><p>월별 서버비 납부 현황</p></div>
+      <button class="btn btn-primary admin-only" onclick="openServerFeeModal()"><i class="fa-solid fa-plus"></i> 서버비 추가</button>
+    </div>
     <div class="section"><div id="serverfee-list"><div class="loading">불러오는 중...</div></div></div>
   </div>
 
@@ -213,7 +216,10 @@
 
   <!-- 성과 현황 -->
   <div id="page-performance" class="page">
-    <div class="page-header"><div><h1>성과 현황</h1><p>회원별 누적 수익률 랭킹</p></div></div>
+    <div class="page-header">
+      <div><h1>성과 현황</h1><p>회원별 누적 수익률 랭킹</p></div>
+      <button class="btn btn-primary admin-only" onclick="openPerfModal()"><i class="fa-solid fa-plus"></i> 성과 데이터 입력</button>
+    </div>
     <div class="section">
       <div class="section-title">누적 수익률 랭킹</div>
       <div id="performance-list"><div class="loading">불러오는 중...</div></div>
@@ -231,7 +237,10 @@
 
   <!-- 성과금 입금 기록 -->
   <div id="page-paymentHistory" class="page">
-    <div class="page-header"><div><h1>성과금 입금 기록</h1><p>회원별 성과금 입금 현황</p></div></div>
+    <div class="page-header">
+      <div><h1>성과금 입금 기록</h1><p>회원별 성과금 입금 현황</p></div>
+      <button class="btn btn-primary admin-only" onclick="openPaymentModal()"><i class="fa-solid fa-plus"></i> 입금 기록 추가</button>
+    </div>
     <div class="section">
       <div class="section-title">입금 내역</div>
       <div id="payment-history-list"><div class="loading">불러오는 중...</div></div>
@@ -282,6 +291,91 @@
     <div class="form-actions">
       <button class="btn btn-secondary" onclick="closeNewCustomerModal()">취소</button>
       <button class="btn btn-primary" onclick="submitNewCustomer()"><i class="fa-solid fa-check"></i> 등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- 성과 데이터 입력 모달 -->
+<div class="modal-overlay" id="perf-modal">
+  <div class="modal">
+    <h2><i class="fa-solid fa-chart-line"></i> 성과 데이터 입력</h2>
+    <div class="form-grid">
+      <div class="form-group"><label>회원번호 *</label><input type="text" id="p-id" placeholder="회원번호 입력" oninput="autoFillName('p-id','p-name')"></div>
+      <div class="form-group"><label>회원명</label><input type="text" id="p-name" placeholder="자동입력" readonly style="background:#111;color:#888;"></div>
+      <div class="form-group"><label>정산월 *</label><input type="text" id="p-month" placeholder="예: 2026.05"></div>
+      <div class="form-group"><label>환율기준일</label><input type="text" id="p-exdate" placeholder="예: 2026.05.31"></div>
+      <div class="form-group"><label>환율 (원/USD)</label><input type="number" id="p-exrate" placeholder="1450"></div>
+      <div class="form-group"><label>입금금액 (USD)</label><input type="number" id="p-deposit" placeholder="0" step="0.01"></div>
+      <div class="form-group"><label>지급크레딧 (USD)</label><input type="number" id="p-credit" placeholder="0" step="0.01"></div>
+      <div class="form-group"><label>보너스+입금합계 (USD)</label><input type="number" id="p-total" placeholder="0" step="0.01"></div>
+      <div class="form-group"><label>당월말잔고 (USD)</label><input type="number" id="p-balance" placeholder="0" step="0.01"></div>
+      <div class="form-group"><label>월간수익률 (%)</label><input type="number" id="p-rate" placeholder="0" step="0.01"></div>
+      <div class="form-group"><label>월간수익금 (USD)</label><input type="number" id="p-profit" placeholder="0" step="0.01"></div>
+      <div class="form-group"><label>거래횟수</label><input type="number" id="p-trades" placeholder="0"></div>
+      <div class="form-group"><label>승률 (%)</label><input type="number" id="p-winrate" placeholder="0" step="0.01"></div>
+      <div class="form-group"><label>MDD (%)</label><input type="number" id="p-mdd" placeholder="0" step="0.01"></div>
+      <div class="form-group"><label>최초입금일</label><input type="text" id="p-firstdate" placeholder="예: 2026.01.13"></div>
+      <div class="form-group"><label>최초환율</label><input type="number" id="p-firstrate" placeholder="0"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closePerfModal()">취소</button>
+      <button class="btn btn-primary" onclick="submitPerf()"><i class="fa-solid fa-check"></i> 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 정산 성과금 입력 모달 -->
+<div class="modal-overlay" id="settlement-pbc-modal">
+  <div class="modal" style="width:450px;">
+    <h2><i class="fa-solid fa-calculator"></i> PBC 성과금 입력</h2>
+    <div class="form-grid" style="grid-template-columns:1fr;">
+      <div class="form-group"><label>회원번호 *</label><input type="text" id="sp-id" placeholder="회원번호" oninput="autoFillSettlementName()"></div>
+      <div class="form-group"><label>회원명</label><input type="text" id="sp-name" placeholder="자동입력" readonly style="background:#111;color:#888;"></div>
+      <div class="form-group"><label>정산월 *</label><input type="text" id="sp-month" placeholder="예: 2026.05"></div>
+      <div class="form-group"><label>성과금 (원) *</label><input type="number" id="sp-amount" placeholder="0"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeSettlementPBCModal()">취소</button>
+      <button class="btn btn-primary" onclick="submitSettlementPBC()"><i class="fa-solid fa-check"></i> 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 서버비 추가 모달 -->
+<div class="modal-overlay" id="serverfee-modal">
+  <div class="modal" style="width:450px;">
+    <h2><i class="fa-solid fa-server"></i> 서버비 추가</h2>
+    <div class="form-grid" style="grid-template-columns:1fr;">
+      <div class="form-group"><label>정산월 *</label><input type="text" id="sf-month" placeholder="예: 2026.05"></div>
+      <div class="form-group"><label>회원번호</label><input type="text" id="sf-id" placeholder="회원번호" oninput="autoFillServerFeeName()"></div>
+      <div class="form-group"><label>회원명 *</label><input type="text" id="sf-name" placeholder="자동입력"></div>
+      <div class="form-group"><label>서버비금액 (원) *</label><input type="number" id="sf-amount" placeholder="0"></div>
+      <div class="form-group"><label>입금여부</label><select id="sf-paid"><option value="N">미납</option><option value="✅">완납</option></select></div>
+      <div class="form-group"><label>국내/국외</label><select id="sf-type"><option value="국내">국내</option><option value="국외">국외</option></select></div>
+      <div class="form-group"><label>비고</label><input type="text" id="sf-memo" placeholder="메모"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeServerFeeModal()">취소</button>
+      <button class="btn btn-primary" onclick="submitServerFee()"><i class="fa-solid fa-check"></i> 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 성과금 입금 기록 추가 모달 -->
+<div class="modal-overlay" id="payment-modal">
+  <div class="modal" style="width:450px;">
+    <h2><i class="fa-solid fa-money-bill-transfer"></i> 입금 기록 추가</h2>
+    <div class="form-grid" style="grid-template-columns:1fr;">
+      <div class="form-group"><label>회원번호 *</label><input type="text" id="pm-id" placeholder="회원번호" oninput="autoFillPaymentName()"></div>
+      <div class="form-group"><label>회원명</label><input type="text" id="pm-name" placeholder="자동입력" readonly style="background:#111;color:#888;"></div>
+      <div class="form-group"><label>정산월 *</label><input type="text" id="pm-month" placeholder="예: 2026.05"></div>
+      <div class="form-group"><label>입금일</label><input type="date" id="pm-date"></div>
+      <div class="form-group"><label>입금금액 (원) *</label><input type="number" id="pm-amount" placeholder="0"></div>
+      <div class="form-group"><label>성과금총액 (원)</label><input type="number" id="pm-total" placeholder="0"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closePaymentModal()">취소</button>
+      <button class="btn btn-primary" onclick="submitPayment()"><i class="fa-solid fa-check"></i> 저장</button>
     </div>
   </div>
 </div>
@@ -517,7 +611,13 @@
     const filtered = data.filter(filterFn);
     let html = '<table class="data-table"><tr><th>발행일</th><th>정산월</th><th>수신인</th><th>금액</th><th>링크</th></tr>';
     filtered.forEach(r => {
-      html += `<tr><td>${r.발행일}</td><td>${r.정산월}</td><td>${r.수신인}</td><td>₩${Number(r.금액).toLocaleString()}</td><td><a href="${r.링크}" target="_blank" style="color:#bf953f;">보기 →</a></td></tr>`;
+      // 발행일 포맷 정리 (Date 객체 또는 영문 날짜 → 한글)
+      let 발행일표시 = r.발행일 || '';
+      try {
+        const d = new Date(발행일표시);
+        if (!isNaN(d)) 발행일표시 = d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일';
+      } catch(e) {}
+      html += `<tr><td>${발행일표시}</td><td>${r.정산월}</td><td>${r.수신인}</td><td>₩${Number(r.금액).toLocaleString()}</td><td><a href="${r.링크}" target="_blank" style="color:#bf953f;">보기 →</a></td></tr>`;
     });
     document.getElementById(targetId).innerHTML = !filtered.length ? '<div class="empty">발행된 내역이 없습니다</div>' : html + '</table>';
   }
@@ -688,6 +788,136 @@
     showToast('✅ 신규 고객 등록 완료!');
     closeNewCustomerModal();
     loadCustomers();
+  };
+
+  // ── 회원번호 → 회원명 자동완성 ────────────────────
+  async function getCustomerByID(id) {
+    const customers = await getCached('customers', () => getAll('customers'));
+    return customers.find(c => c.회원번호 === id.trim());
+  }
+
+  window.autoFillName = async function(idField, nameField) {
+    const id = document.getElementById(idField).value.trim();
+    if (!id) return;
+    const c = await getCustomerByID(id);
+    document.getElementById(nameField).value = c ? c.회원명 : '';
+  };
+  window.autoFillSettlementName = async function() {
+    const c = await getCustomerByID(document.getElementById('sp-id').value);
+    document.getElementById('sp-name').value = c ? c.회원명 : '';
+  };
+  window.autoFillServerFeeName = async function() {
+    const c = await getCustomerByID(document.getElementById('sf-id').value);
+    if (c) document.getElementById('sf-name').value = c.회원명;
+  };
+  window.autoFillPaymentName = async function() {
+    const c = await getCustomerByID(document.getElementById('pm-id').value);
+    document.getElementById('pm-name').value = c ? c.회원명 : '';
+  };
+
+  // ── 1. 성과 데이터 입력 ────────────────────────────
+  window.openPerfModal = function() { document.getElementById('perf-modal').classList.add('active'); };
+  window.closePerfModal = function() { document.getElementById('perf-modal').classList.remove('active'); };
+  window.submitPerf = async function() {
+    const id = document.getElementById('p-id').value.trim();
+    const month = document.getElementById('p-month').value.trim();
+    const name = document.getElementById('p-name').value.trim();
+    if (!id || !month) { showToast('❌ 회원번호와 정산월은 필수입니다'); return; }
+    const docId = id.replace(/[\/\.]/g,'_') + '_' + month.replace(/\./g,'');
+    await setDoc(doc(db,'performance',docId), {
+      회원번호:id, 회원명:name, 정산월:month,
+      환율기준일:document.getElementById('p-exdate').value,
+      환율:Number(document.getElementById('p-exrate').value)||0,
+      입금금액USD:Number(document.getElementById('p-deposit').value)||0,
+      지급크레딧USD:Number(document.getElementById('p-credit').value)||0,
+      보너스입금합계USD:Number(document.getElementById('p-total').value)||0,
+      당월말잔고USD:Number(document.getElementById('p-balance').value)||0,
+      월간수익률:Number(document.getElementById('p-rate').value)||0,
+      월간수익금USD:Number(document.getElementById('p-profit').value)||0,
+      거래횟수:Number(document.getElementById('p-trades').value)||0,
+      승률:Number(document.getElementById('p-winrate').value)||0,
+      MDD:Number(document.getElementById('p-mdd').value)||0,
+      최초입금일:document.getElementById('p-firstdate').value,
+      최초환율:Number(document.getElementById('p-firstrate').value)||0,
+      초기금액USD:Number(document.getElementById('p-deposit').value)||0
+    });
+    delete cache['performance'];
+    showToast('✅ 성과 데이터 저장 완료!');
+    closePerfModal();
+    loadPerformance();
+  };
+
+  // ── 2. 정산 성과금 입력 ────────────────────────────
+  window.openSettlementPBCModal = function() { document.getElementById('settlement-pbc-modal').classList.add('active'); };
+  window.closeSettlementPBCModal = function() { document.getElementById('settlement-pbc-modal').classList.remove('active'); };
+  window.submitSettlementPBC = async function() {
+    const id = document.getElementById('sp-id').value.trim();
+    const month = document.getElementById('sp-month').value.trim();
+    const amount = Number(document.getElementById('sp-amount').value)||0;
+    const name = document.getElementById('sp-name').value.trim();
+    if (!id||!month||!amount) { showToast('❌ 필수 항목을 입력해주세요'); return; }
+    const docId = month.replace(/\./g,'') + '_' + id.replace(/[\/\.]/g,'_');
+    const ref = doc(db,'settlements',docId);
+    const snap = await getDocs(collection(db,'settlements'));
+    const existing = snap.docs.find(d => d.id === docId);
+    if (existing) {
+      await setDoc(ref, {...existing.data(), 성과금:amount});
+    } else {
+      await setDoc(ref, {정산월:month, 회원번호:id, 회원명:name, 성과금:amount});
+    }
+    delete cache['settlements'];
+    showToast('✅ 성과금 입력 완료!');
+    closeSettlementPBCModal();
+  };
+  window.openSettlementPBCFromTable = function(id, month) {
+    document.getElementById('sp-id').value = id;
+    document.getElementById('sp-month').value = month;
+    autoFillSettlementName();
+    openSettlementPBCModal();
+  };
+
+  // ── 3. 서버비 추가 ─────────────────────────────────
+  window.openServerFeeModal = function() { document.getElementById('serverfee-modal').classList.add('active'); };
+  window.closeServerFeeModal = function() { document.getElementById('serverfee-modal').classList.remove('active'); };
+  window.submitServerFee = async function() {
+    const month = document.getElementById('sf-month').value.trim();
+    const name = document.getElementById('sf-name').value.trim();
+    const amount = Number(document.getElementById('sf-amount').value)||0;
+    if (!month||!name||!amount) { showToast('❌ 필수 항목을 입력해주세요'); return; }
+    await setDoc(doc(db,'serverFees','fee_'+Date.now()), {
+      정산월:month, 회원번호:document.getElementById('sf-id').value.trim(),
+      회원명:name, 서버비금액:amount,
+      입금여부:document.getElementById('sf-paid').value,
+      구분:document.getElementById('sf-type').value,
+      비고:document.getElementById('sf-memo').value
+    });
+    delete cache['serverFees'];
+    showToast('✅ 서버비 추가 완료!');
+    closeServerFeeModal();
+    loadServerFee();
+  };
+
+  // ── 4. 성과금 입금 기록 추가 ──────────────────────
+  window.openPaymentModal = function() { document.getElementById('payment-modal').classList.add('active'); };
+  window.closePaymentModal = function() { document.getElementById('payment-modal').classList.remove('active'); };
+  window.submitPayment = async function() {
+    const id = document.getElementById('pm-id').value.trim();
+    const month = document.getElementById('pm-month').value.trim();
+    const amount = Number(document.getElementById('pm-amount').value)||0;
+    const name = document.getElementById('pm-name').value.trim();
+    if (!id||!month||!amount) { showToast('❌ 필수 항목을 입력해주세요'); return; }
+    const dateVal = document.getElementById('pm-date').value;
+    const dateStr = dateVal ? formatDate(dateVal) : '';
+    await setDoc(doc(db,'payments','pay_'+Date.now()), {
+      회원번호:id, 회원명:name, 정산월:month,
+      입금일:dateStr, 입금금액:amount,
+      상태:dateStr?'Complete':'미입금',
+      성과금총액:Number(document.getElementById('pm-total').value)||0
+    });
+    delete cache['payments'];
+    showToast('✅ 입금 기록 추가 완료!');
+    closePaymentModal();
+    loadPaymentHistory();
   };
 
   // 초기 로드
