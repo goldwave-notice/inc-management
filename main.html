@@ -102,7 +102,8 @@
     <div class="nav-item admin-only" onclick="showPage('missingPBC', this)"><i class="fa-solid fa-circle-exclamation"></i> 미수금 현황</div>
     <div class="nav-item admin-only" onclick="showPage('paymentHistory', this)"><i class="fa-solid fa-money-bill-transfer"></i> 성과금 입금 기록</div>
     <div class="nav-section">골드웨이브</div>
-    <div class="nav-item admin-only" onclick="showPage('profitMgmt', this)"><i class="fa-solid fa-image"></i> 수익현황 관리</div>
+    <div class="nav-item" onclick="showPageOrDenied('profitMgmt', this)"><i class="fa-solid fa-image"></i> 수익현황 관리</div>
+    <div class="nav-item" onclick="showPageOrDenied('tradingReport', this)"><i class="fa-solid fa-calendar-days"></i> 트레이딩 리포트 관리</div>
   </nav>
   <div class="role-badge" id="role-badge">관리자</div>
   <div class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</div>
@@ -300,6 +301,23 @@
       <div id="profit-mgmt-list"><div class="loading">불러오는 중...</div></div>
     </div>
   </div>
+
+  <!-- 트레이딩 리포트 관리 -->
+  <div id="page-tradingReport" class="page">
+    <div class="page-header">
+      <div><h1>트레이딩 리포트 관리</h1><p>일별·주별·월별 리포트 입력 · report.html 자동 연동</p></div>
+      <button class="btn btn-primary" onclick="openTrModal()"><i class="fa-solid fa-plus"></i> 리포트 입력</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+      <button class="btn btn-primary" id="tr-tab-daily" onclick="switchTrTab('daily')">일별</button>
+      <button class="btn btn-secondary" id="tr-tab-weekly" onclick="switchTrTab('weekly')">주별</button>
+      <button class="btn btn-secondary" id="tr-tab-monthly" onclick="switchTrTab('monthly')">월별</button>
+    </div>
+    <div class="section">
+      <div class="section-title" id="tr-list-title">일별 리포트 목록</div>
+      <div id="tr-list"><div class="loading">불러오는 중...</div></div>
+    </div>
+  </div>
 </div>
 
 <!-- 신규 고객 등록 모달 -->
@@ -485,6 +503,57 @@
   </div>
 </div>
 
+<!-- 트레이딩 리포트 입력 모달 -->
+<div class="modal-overlay" id="tr-modal">
+  <div class="modal" style="width:600px;">
+    <h2><i class="fa-solid fa-calendar-plus"></i> 트레이딩 리포트 입력</h2>
+    <div class="form-grid" style="grid-template-columns:1fr;">
+      <div class="form-group">
+        <label>리포트 종류 *</label>
+        <select id="tr-type" onchange="updateTrDateFields()">
+          <option value="daily">일별</option>
+          <option value="weekly">주별</option>
+          <option value="monthly">월별</option>
+        </select>
+      </div>
+      <div class="form-group" id="tr-field-daily">
+        <label>날짜 * (예: 2026.06.15)</label>
+        <input type="text" id="tr-date" placeholder="2026.06.15">
+      </div>
+      <div class="form-group" id="tr-field-weekly" style="display:none;">
+        <label>주간 시작일 * (예: 2026.06.15)</label>
+        <input type="text" id="tr-week-start" placeholder="2026.06.15">
+        <label style="margin-top:8px;">주간 종료일 * (예: 2026.06.19)</label>
+        <input type="text" id="tr-week-end" placeholder="2026.06.19">
+      </div>
+      <div class="form-group" id="tr-field-monthly" style="display:none;">
+        <label>월 * (예: 2026.06)</label>
+        <input type="text" id="tr-month" placeholder="2026.06">
+      </div>
+      <div class="form-group">
+        <label>수익률 (%) *</label>
+        <input type="number" id="tr-rate" placeholder="예: 8" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>주요 이슈 (굵게 표시될 핵심 문장) *</label>
+        <input type="text" id="tr-issue" placeholder="예: 박스권 등락, 시장 방향성 탐색 구간">
+      </div>
+      <div class="form-group">
+        <label>골드웨이브 대응/상관관계 *</label>
+        <input type="text" id="tr-correlation" placeholder="예: 알고리즘 보수적 운용, 리스크 최소화하며 수익 유지 중">
+      </div>
+      <div class="form-group">
+        <label>진행중 표시</label>
+        <select id="tr-ongoing"><option value="N">N</option><option value="Y">Y</option></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeTrModal()">취소</button>
+      <button class="btn btn-primary" onclick="submitTrReport()"><i class="fa-solid fa-check"></i> 저장</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- Firebase SDK -->
@@ -560,9 +629,19 @@
       performance: loadPerformance,
       missingPBC: loadMissingPBC,
       paymentHistory: loadPaymentHistory,
-      profitMgmt: loadProfitMgmt
+      profitMgmt: loadProfitMgmt,
+      tradingReport: loadTradingReports
     };
     if (loaders[page]) loaders[page]();
+  };
+
+  // 골드웨이브 메뉴: 개발자는 메뉴는 보이지만 클릭 시 권한없음
+  window.showPageOrDenied = function(page, el) {
+    if (role === 'dev') {
+      showToast('🔒 권한이 없습니다');
+      return;
+    }
+    showPage(page, el);
   };
 
   window.logout = function() {
@@ -1266,6 +1345,116 @@
     delete cache['profitImages'];
     showToast('✅ 삭제 완료!');
     loadProfitMgmt();
+  };
+
+  // ── 트레이딩 리포트 관리 ─────────────────────────────
+  let trCurrentTab = 'daily';
+
+  window.switchTrTab = function(type) {
+    trCurrentTab = type;
+    ['daily','weekly','monthly'].forEach(t => {
+      document.getElementById('tr-tab-'+t).className = (t===type) ? 'btn btn-primary' : 'btn btn-secondary';
+    });
+    const titles = {daily:'일별 리포트 목록', weekly:'주별 리포트 목록', monthly:'월별 리포트 목록'};
+    document.getElementById('tr-list-title').textContent = titles[type];
+    loadTradingReports();
+  };
+
+  window.updateTrDateFields = function() {
+    const type = document.getElementById('tr-type').value;
+    document.getElementById('tr-field-daily').style.display = type==='daily'?'block':'none';
+    document.getElementById('tr-field-weekly').style.display = type==='weekly'?'block':'none';
+    document.getElementById('tr-field-monthly').style.display = type==='monthly'?'block':'none';
+  };
+
+  window.openTrModal = function() {
+    document.getElementById('tr-type').value = trCurrentTab;
+    updateTrDateFields();
+    document.getElementById('tr-date').value = '';
+    document.getElementById('tr-week-start').value = '';
+    document.getElementById('tr-week-end').value = '';
+    document.getElementById('tr-month').value = '';
+    document.getElementById('tr-rate').value = '';
+    document.getElementById('tr-issue').value = '';
+    document.getElementById('tr-correlation').value = '';
+    document.getElementById('tr-ongoing').value = 'N';
+    document.getElementById('tr-modal').classList.add('active');
+  };
+
+  window.closeTrModal = function() { document.getElementById('tr-modal').classList.remove('active'); };
+
+  window.submitTrReport = async function() {
+    const type = document.getElementById('tr-type').value;
+    const rate = Number(document.getElementById('tr-rate').value);
+    const issue = document.getElementById('tr-issue').value.trim();
+    const correlation = document.getElementById('tr-correlation').value.trim();
+    const ongoing = document.getElementById('tr-ongoing').value;
+    if (!issue || !correlation || isNaN(rate)) { showToast('❌ 필수 항목을 입력해주세요'); return; }
+
+    let docId, dateLabel;
+    const days = ['일','월','화','수','목','금','토'];
+
+    if (type === 'daily') {
+      const dateStr = document.getElementById('tr-date').value.trim();
+      if (!dateStr) { showToast('❌ 날짜를 입력해주세요'); return; }
+      const p = dateStr.split('.').map(s=>s.trim());
+      docId = 'daily_' + p[0] + p[1].padStart(2,'0') + p[2].padStart(2,'0');
+      const d = new Date(Number(p[0]), Number(p[1])-1, Number(p[2]));
+      dateLabel = dateStr + ' (' + days[d.getDay()] + ')';
+    } else if (type === 'weekly') {
+      const start = document.getElementById('tr-week-start').value.trim();
+      const end = document.getElementById('tr-week-end').value.trim();
+      if (!start || !end) { showToast('❌ 주간 시작/종료일을 입력해주세요'); return; }
+      const p = start.split('.').map(s=>s.trim());
+      docId = 'weekly_' + p[0] + p[1].padStart(2,'0') + p[2].padStart(2,'0');
+      dateLabel = start + ' ~ ' + end;
+    } else {
+      const month = document.getElementById('tr-month').value.trim();
+      if (!month) { showToast('❌ 월을 입력해주세요'); return; }
+      const p = month.split('.').map(s=>s.trim());
+      docId = 'monthly_' + p[0] + p[1].padStart(2,'0');
+      dateLabel = p[0] + '년 ' + p[1] + '월';
+    }
+
+    await setDoc(doc(db,'tradingReports',docId), {
+      type, docId, dateLabel,
+      returnRate: rate, issue, correlation, ongoing,
+      createdAt: new Date().toISOString()
+    });
+
+    delete cache['tradingReports'];
+    showToast('✅ 리포트 저장 완료!');
+    closeTrModal();
+    loadTradingReports();
+  };
+
+  async function loadTradingReports() {
+    const data = await getCached('tradingReports', () => getAll('tradingReports'));
+    const filtered = data.filter(r => r.type === trCurrentTab).sort((a,b)=>b.docId.localeCompare(a.docId));
+    if (!filtered.length) { document.getElementById('tr-list').innerHTML = '<div class="empty">등록된 리포트가 없습니다</div>'; return; }
+    let html = '<table class="data-table"><tr><th>기간</th><th>수익률</th><th>주요 이슈</th><th>상관관계</th><th>진행중</th><th>삭제</th></tr>';
+    filtered.forEach(r => {
+      const color = r.returnRate>=0 ? '#00ff00' : '#ff5050';
+      html += `<tr>
+        <td><b>${r.dateLabel}</b></td>
+        <td style="color:${color};font-weight:800;">${r.returnRate>=0?'+':''}${r.returnRate}%</td>
+        <td>${r.issue}</td>
+        <td style="font-size:12px;color:#aaa;">${r.correlation}</td>
+        <td>${r.ongoing==='Y'?'<span class="badge badge-gold">진행중</span>':'-'}</td>
+        <td><button class="btn btn-secondary" style="padding:5px 12px;font-size:11px;" onclick="deleteTrReport('${r.docId}')"><i class="fa-solid fa-trash"></i></button></td>
+      </tr>`;
+    });
+    html += '</table>';
+    document.getElementById('tr-list').innerHTML = html;
+  }
+
+  window.deleteTrReport = async function(docId) {
+    if (!confirm('삭제하시겠습니까?')) return;
+    const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(doc(db,'tradingReports',docId));
+    delete cache['tradingReports'];
+    showToast('✅ 삭제 완료!');
+    loadTradingReports();
   };
 
   // 초기 로드
