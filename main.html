@@ -212,7 +212,7 @@
     <div id="report-input-section" class="section" style="display:none;">
       <div class="section-title">📋 성과데이터 입력</div>
       <div class="form-grid">
-        <div class="form-group"><label>회원번호 *</label><input type="text" id="ri-id" placeholder="회원번호 입력" oninput="autoFillReportName()"></div>
+        <div class="form-group"><label>회원번호 *</label><input type="text" id="ri-id" placeholder="회원번호 입력" list="customer-datalist" oninput="autoFillReportName()"></div>
         <div class="form-group"><label>회원명</label><input type="text" id="ri-name" placeholder="자동입력" readonly style="background:#111;color:#888;"></div>
         <div class="form-group"><label>정산월 *</label><input type="text" id="ri-month" placeholder="예: 2026.05"></div>
         <div class="form-group"><label>환율기준일</label><input type="text" id="ri-exdate" placeholder="예: 2026.05.31"></div>
@@ -401,7 +401,7 @@
   <div class="modal" style="width:450px;">
     <h2><i class="fa-solid fa-calculator"></i> PBC 성과금 입력</h2>
     <div class="form-grid" style="grid-template-columns:1fr;">
-      <div class="form-group"><label>회원번호 *</label><input type="text" id="sp-id" placeholder="회원번호" oninput="autoFillSettlementName()"></div>
+      <div class="form-group"><label>회원번호 *</label><input type="text" id="sp-id" placeholder="회원번호" list="customer-datalist" oninput="autoFillSettlementName()"></div>
       <div class="form-group"><label>회원명</label><input type="text" id="sp-name" placeholder="자동입력" readonly style="background:#111;color:#888;"></div>
       <div class="form-group"><label>정산월 *</label><input type="text" id="sp-month" placeholder="예: 2026.05"></div>
       <div class="form-group"><label>성과금 (원) *</label><input type="number" id="sp-amount" placeholder="0"></div>
@@ -419,7 +419,7 @@
     <h2><i class="fa-solid fa-server"></i> 서버비 추가</h2>
     <div class="form-grid" style="grid-template-columns:1fr;">
       <div class="form-group"><label>정산월 *</label><input type="text" id="sf-month" placeholder="예: 2026.05"></div>
-      <div class="form-group"><label>회원번호</label><input type="text" id="sf-id" placeholder="회원번호" oninput="autoFillServerFeeName()"></div>
+      <div class="form-group"><label>회원번호</label><input type="text" id="sf-id" placeholder="회원번호" list="customer-datalist" oninput="autoFillServerFeeName()"></div>
       <div class="form-group"><label>회원명 *</label><input type="text" id="sf-name" placeholder="자동입력"></div>
       <div class="form-group"><label>서버비금액 (원) *</label><input type="number" id="sf-amount" placeholder="0"></div>
       <div class="form-group"><label>입금여부</label><select id="sf-paid"><option value="N">미납</option><option value="✅">완납</option></select></div>
@@ -439,7 +439,7 @@
     <h2 id="payment-modal-title"><i class="fa-solid fa-money-bill-transfer"></i> 입금 기록 추가</h2>
     <input type="hidden" id="pm-docid" value="">
     <div class="form-grid" style="grid-template-columns:1fr;">
-      <div class="form-group"><label>회원번호 *</label><input type="text" id="pm-id" placeholder="회원번호" oninput="autoFillPaymentName()"></div>
+      <div class="form-group"><label>회원번호 *</label><input type="text" id="pm-id" placeholder="회원번호" list="customer-datalist" oninput="autoFillPaymentName()"></div>
       <div class="form-group"><label>회원명</label><input type="text" id="pm-name" placeholder="자동입력" readonly style="background:#111;color:#888;"></div>
       <div class="form-group"><label>정산월 *</label><input type="text" id="pm-month" placeholder="예: 2026.05"></div>
       <div class="form-group"><label>입금일</label><input type="date" id="pm-date"></div>
@@ -555,6 +555,7 @@
   </div>
 </div>
 
+<datalist id="customer-datalist"></datalist>
 <div class="toast" id="toast"></div>
 
 <!-- Firebase SDK -->
@@ -986,6 +987,13 @@
   async function getCustomerByID(id) {
     const customers = await getCached('customers', () => getAll('customers'));
     return customers.find(c => c.회원번호 === id.trim());
+  }
+
+  // ── 회원번호 자동완성 datalist ─────────────────────
+  async function populateCustomerDatalist() {
+    const customers = await getCached('customers', () => getAll('customers'));
+    const dl = document.getElementById('customer-datalist');
+    dl.innerHTML = customers.map(c => `<option value="${c.회원번호}">${c.회원명}</option>`).join('');
   }
 
   window.autoFillName = async function(idField, nameField) {
@@ -1527,6 +1535,7 @@
 
   // 초기 로드
   loadDashboard();
+  populateCustomerDatalist();
 </script>
 </body>
 </html>
