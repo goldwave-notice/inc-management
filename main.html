@@ -1148,14 +1148,28 @@
     const dateVal = document.getElementById('pm-date').value;
     const dateStr = dateVal ? formatDate(dateVal) : '';
     const docId = document.getElementById('pm-docid').value || ('pay_'+Date.now());
-    await setDoc(doc(db,'payments',docId), {
+    const isEdit = !!document.getElementById('pm-docid').value;
+    const paymentData = {
       회원번호:id, 회원명:name, 정산월:month,
       입금일:dateStr, 입금금액:amount,
       상태:dateStr?'Complete':'미입금',
       성과금총액:Number(document.getElementById('pm-total').value)||0
-    });
+    };
+
+    // 1) Firestore 저장
+    await setDoc(doc(db,'payments',docId), paymentData);
+
+    // 2) 구글시트 동기화 (Apps Script doPost 호출)
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({action: isEdit ? 'updatePayment' : 'addPayment', docId, ...paymentData}),
+        headers: {'Content-Type': 'text/plain;charset=utf-8'}
+      });
+    } catch(e) { console.warn('시트 동기화 실패:', e); }
+
     delete cache['payments'];
-    showToast('✅ 입금 기록 ' + (document.getElementById('pm-docid').value ? '수정' : '추가') + ' 완료!');
+    showToast('✅ 입금 기록 ' + (isEdit ? '수정' : '추가') + ' 완료!');
     closePaymentModal();
     loadPaymentHistory();
   };
@@ -1164,6 +1178,13 @@
     if (!confirm('이 입금 기록을 삭제하시겠습니까?')) return;
     const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
     await deleteDoc(doc(db,'payments',docId));
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({action: 'deletePayment', docId}),
+        headers: {'Content-Type': 'text/plain;charset=utf-8'}
+      });
+    } catch(e) { console.warn('시트 동기화 실패:', e); }
     delete cache['payments'];
     showToast('✅ 삭제 완료!');
     loadPaymentHistory();
