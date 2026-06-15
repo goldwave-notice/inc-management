@@ -436,7 +436,8 @@
 <!-- 성과금 입금 기록 추가 모달 -->
 <div class="modal-overlay" id="payment-modal">
   <div class="modal" style="width:450px;">
-    <h2><i class="fa-solid fa-money-bill-transfer"></i> 입금 기록 추가</h2>
+    <h2 id="payment-modal-title"><i class="fa-solid fa-money-bill-transfer"></i> 입금 기록 추가</h2>
+    <input type="hidden" id="pm-docid" value="">
     <div class="form-grid" style="grid-template-columns:1fr;">
       <div class="form-group"><label>회원번호 *</label><input type="text" id="pm-id" placeholder="회원번호" oninput="autoFillPaymentName()"></div>
       <div class="form-group"><label>회원명</label><input type="text" id="pm-name" placeholder="자동입력" readonly style="background:#111;color:#888;"></div>
@@ -598,7 +599,7 @@
   // Firestore 전체 컬렉션 읽기
   async function getAll(col) {
     const snap = await getDocs(collection(db, col));
-    return snap.docs.map(d => d.data());
+    return snap.docs.map(d => ({...d.data(), _docId: d.id}));
   }
 
   // ── 캐시 ──────────────────────────────────────────
@@ -935,10 +936,14 @@
   async function loadPaymentHistory() {
     const data = await getCached('payments', () => getAll('payments'));
     if (!data.length) { document.getElementById('payment-history-list').innerHTML = '<div class="empty">입금 내역이 없습니다</div>'; return; }
-    let html = '<table class="data-table"><tr><th>회원번호</th><th>회원명</th><th>정산월</th><th>입금일</th><th>입금금액(원)</th><th>상태</th><th>성과금총액(원)</th></tr>';
+    let html = '<table class="data-table"><tr><th>회원번호</th><th>회원명</th><th>정산월</th><th>입금일</th><th>입금금액(원)</th><th>상태</th><th>성과금총액(원)</th><th>관리</th></tr>';
     data.forEach(r => {
       const done = r.상태 === 'Complete';
-      html += `<tr><td>${r.회원번호}</td><td><b>${r.회원명}</b></td><td>${r.정산월}</td><td>${r.입금일||'-'}</td><td>${r.입금금액>0?'₩'+Number(r.입금금액).toLocaleString():'-'}</td><td><span class="badge ${done?'badge-green':'badge-red'}">${done?'Complete':'미입금'}</span></td><td>${r.성과금총액>0?'₩'+Number(r.성과금총액).toLocaleString():'-'}</td></tr>`;
+      html += `<tr><td>${r.회원번호}</td><td><b>${r.회원명}</b></td><td>${r.정산월}</td><td>${r.입금일||'-'}</td><td>${r.입금금액>0?'₩'+Number(r.입금금액).toLocaleString():'-'}</td><td><span class="badge ${done?'badge-green':'badge-red'}">${done?'Complete':'미입금'}</span></td><td>${r.성과금총액>0?'₩'+Number(r.성과금총액).toLocaleString():'-'}</td>
+        <td style="white-space:nowrap;">
+          <button class="btn btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="openPaymentModal('${r._docId}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="deletePayment('${r._docId}')"><i class="fa-solid fa-trash"></i></button>
+        </td></tr>`;
     });
     document.getElementById('payment-history-list').innerHTML = html + '</table>';
   }
@@ -1100,9 +1105,40 @@
     loadServerFee();
   };
 
-  // ── 4. 성과금 입금 기록 추가 ──────────────────────
-  window.openPaymentModal = function() { document.getElementById('payment-modal').classList.add('active'); };
+  // ── 4. 성과금 입금 기록 추가/수정/삭제 ──────────────────────
+  window.openPaymentModal = function(docId) {
+    document.getElementById('payment-modal-title').innerHTML = '<i class="fa-solid fa-money-bill-transfer"></i> 입금 기록 ' + (docId ? '수정' : '추가');
+    document.getElementById('pm-docid').value = docId || '';
+    if (docId) {
+      const data = cache['payments'] || [];
+      const r = data.find(x => x._docId === docId);
+      if (r) {
+        document.getElementById('pm-id').value = r.회원번호 || '';
+        document.getElementById('pm-name').value = r.회원명 || '';
+        document.getElementById('pm-month').value = r.정산월 || '';
+        document.getElementById('pm-date').value = toDateInputValue(r.입금일);
+        document.getElementById('pm-amount').value = r.입금금액 || '';
+        document.getElementById('pm-total').value = r.성과금총액 || '';
+      }
+    } else {
+      document.getElementById('pm-id').value = '';
+      document.getElementById('pm-name').value = '';
+      document.getElementById('pm-month').value = '';
+      document.getElementById('pm-date').value = '';
+      document.getElementById('pm-amount').value = '';
+      document.getElementById('pm-total').value = '';
+    }
+    document.getElementById('payment-modal').classList.add('active');
+  };
   window.closePaymentModal = function() { document.getElementById('payment-modal').classList.remove('active'); };
+
+  function toDateInputValue(str) {
+    if (!str) return '';
+    const d = new Date(str);
+    if (isNaN(d)) return '';
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
   window.submitPayment = async function() {
     const id = document.getElementById('pm-id').value.trim();
     const month = document.getElementById('pm-month').value.trim();
@@ -1111,15 +1147,25 @@
     if (!id||!month||!amount) { showToast('❌ 필수 항목을 입력해주세요'); return; }
     const dateVal = document.getElementById('pm-date').value;
     const dateStr = dateVal ? formatDate(dateVal) : '';
-    await setDoc(doc(db,'payments','pay_'+Date.now()), {
+    const docId = document.getElementById('pm-docid').value || ('pay_'+Date.now());
+    await setDoc(doc(db,'payments',docId), {
       회원번호:id, 회원명:name, 정산월:month,
       입금일:dateStr, 입금금액:amount,
       상태:dateStr?'Complete':'미입금',
       성과금총액:Number(document.getElementById('pm-total').value)||0
     });
     delete cache['payments'];
-    showToast('✅ 입금 기록 추가 완료!');
+    showToast('✅ 입금 기록 ' + (document.getElementById('pm-docid').value ? '수정' : '추가') + ' 완료!');
     closePaymentModal();
+    loadPaymentHistory();
+  };
+
+  window.deletePayment = async function(docId) {
+    if (!confirm('이 입금 기록을 삭제하시겠습니까?')) return;
+    const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(doc(db,'payments',docId));
+    delete cache['payments'];
+    showToast('✅ 삭제 완료!');
     loadPaymentHistory();
   };
 
@@ -1295,6 +1341,7 @@
     const docId = 'profit_' + year + month + day;
 
     // 요일 계산
+    const d = new Date(year, parseInt(parts[1])-1, parseInt(parts[2]));
     const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
     const dayStr = days[d.getDay()];
 
