@@ -309,8 +309,7 @@
       <button class="btn btn-primary" onclick="openTrModal()"><i class="fa-solid fa-plus"></i> 리포트 입력</button>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:20px;">
-      <button class="btn btn-primary" id="tr-tab-daily" onclick="switchTrTab('daily')">일별</button>
-      <button class="btn btn-secondary" id="tr-tab-weekly" onclick="switchTrTab('weekly')">주별</button>
+      <button class="btn btn-primary" id="tr-tab-weekly" onclick="switchTrTab('weekly')">주별</button>
       <button class="btn btn-secondary" id="tr-tab-monthly" onclick="switchTrTab('monthly')">월별</button>
     </div>
     <div class="section">
@@ -512,7 +511,6 @@
       <div class="form-group">
         <label>리포트 종류 *</label>
         <select id="tr-type" onchange="updateTrDateFields()">
-          <option value="daily">일별</option>
           <option value="weekly">주별</option>
           <option value="monthly">월별</option>
         </select>
@@ -532,8 +530,8 @@
         <input type="text" id="tr-month" placeholder="2026.06">
       </div>
       <div class="form-group">
-        <label>수익률 (%) *</label>
-        <input type="number" id="tr-rate" placeholder="예: 8" step="0.01">
+        <label>당일 수익금 ($) *</label>
+        <input type="number" id="tr-rate" placeholder="예: 1998.40" step="0.01">
       </div>
       <div class="form-group">
         <label>주요 이슈 (굵게 표시될 핵심 문장) *</label>
@@ -1424,14 +1422,14 @@
   };
 
   // ── 트레이딩 리포트 관리 ─────────────────────────────
-  let trCurrentTab = 'daily';
+  let trCurrentTab = 'weekly';
 
   window.switchTrTab = function(type) {
     trCurrentTab = type;
-    ['daily','weekly','monthly'].forEach(t => {
+    ['weekly','monthly'].forEach(t => {
       document.getElementById('tr-tab-'+t).className = (t===type) ? 'btn btn-primary' : 'btn btn-secondary';
     });
-    const titles = {daily:'일별 리포트 목록', weekly:'주별 리포트 목록', monthly:'월별 리포트 목록'};
+    const titles = {weekly:'주별 리포트 목록', monthly:'월별 리포트 목록'};
     document.getElementById('tr-list-title').textContent = titles[type];
     loadTradingReports();
   };
@@ -1508,12 +1506,12 @@
     const data = await getCached('tradingReports', () => getAll('tradingReports'));
     const filtered = data.filter(r => r.type === trCurrentTab).sort((a,b)=>b.docId.localeCompare(a.docId));
     if (!filtered.length) { document.getElementById('tr-list').innerHTML = '<div class="empty">등록된 리포트가 없습니다</div>'; return; }
-    let html = '<table class="data-table"><tr><th>기간</th><th>수익률</th><th>주요 이슈</th><th>상관관계</th><th>진행중</th><th>삭제</th></tr>';
+    let html = '<table class="data-table"><tr><th>기간</th><th>수익금($)</th><th>주요 이슈</th><th>상관관계</th><th>진행중</th><th>삭제</th></tr>';
     filtered.forEach(r => {
       const color = r.returnRate>=0 ? '#00ff00' : '#ff5050';
       html += `<tr>
         <td><b>${r.dateLabel}</b></td>
-        <td style="color:${color};font-weight:800;">${r.returnRate>=0?'+':''}${r.returnRate}%</td>
+        <td style="color:${color};font-weight:800;">${r.returnRate>=0?'+':''}$${Number(r.returnRate).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
         <td>${r.issue}</td>
         <td style="font-size:12px;color:#aaa;">${r.correlation}</td>
         <td>${r.ongoing==='Y'?'<span class="badge badge-gold">진행중</span>':'-'}</td>
