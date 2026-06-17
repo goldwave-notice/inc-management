@@ -78,7 +78,7 @@
 <body>
 
 <div class="sidebar">
-  <div class="sidebar-logo">
+  <div class="sidebar-logo" onclick="showPage('dashboard', document.querySelector('.nav-item'))" style="cursor:pointer;">
     <img src="https://i.imgur.com/KgkSfzq.png" alt="INC">
     <h2>INC MANAGEMENT</h2>
     <p>I Know Commerce</p>
@@ -104,7 +104,6 @@
     <div class="nav-section">골드웨이브</div>
     <div class="nav-item" onclick="showPageOrDenied('profitMgmt', this)"><i class="fa-solid fa-image"></i> 수익현황 관리</div>
     <div class="nav-item" onclick="showPageOrDenied('tradingReport', this)"><i class="fa-solid fa-calendar-days"></i> 트레이딩 리포트 관리</div>
-    <div class="nav-item" onclick="showPageOrDenied('newsGenerator', this)"><i class="fa-solid fa-newspaper"></i> 뉴스리포트 생성기</div>
   </nav>
   <div class="role-badge" id="role-badge">관리자</div>
   <div class="logout-btn" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> 로그아웃</div>
@@ -122,6 +121,10 @@
       <div class="stat-card"><div class="label">운용중 고객</div><div class="value" id="stat-active">-</div><div class="sub">현재 유효 계약</div><div class="icon"><i class="fa-solid fa-circle-check"></i></div></div>
       <div class="stat-card"><div class="label">PBC 운용중</div><div class="value" id="stat-pbc">-</div><div class="sub">성과기반 고객</div><div class="icon"><i class="fa-solid fa-chart-line"></i></div></div>
       <div class="stat-card"><div class="label">30일 내 만료</div><div class="value" id="stat-expiry" style="color:#ffc800;">-</div><div class="sub">만료 임박 고객</div><div class="icon"><i class="fa-solid fa-triangle-exclamation"></i></div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">📅 이번달 정산 일정</div>
+      <div id="schedule-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;"></div>
     </div>
     <div class="section">
       <div class="section-title">만료 임박 고객 (30일 이내)</div>
@@ -318,60 +321,6 @@
       <div id="tr-list"><div class="loading">불러오는 중...</div></div>
     </div>
   </div>
-
-  <!-- 뉴스리포트 생성기 -->
-  <div id="page-newsGenerator" class="page">
-    <div class="page-header">
-      <div><h1>뉴스리포트 생성기</h1><p>뉴스 원문 + 이미지 URL 입력 → HTML/텔레그램/아카이브 코드 자동생성</p></div>
-  </div>
-  <div class="section">
-    <div class="form-grid" style="grid-template-columns:1fr;">
-      <div class="form-group">
-        <label>날짜 * (예: 2026.06.16)</label>
-        <input type="text" id="ng-date" placeholder="2026.06.16">
-      </div>
-      <div class="form-group">
-        <label>이미지 URL * (Imgur 링크)</label>
-        <input type="text" id="ng-img" placeholder="https://i.imgur.com/xxxxx.png">
-      </div>
-      <div class="form-group">
-        <label>뉴스 원문 * (뉴스 본문 준 내용)</label>
-        <textarea id="ng-news" rows="10" placeholder="뉴스 원문을 여기에 붙여넣어 주세요..." style="width:100%;background:#1a1d23;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;color:#e0e0e0;font-family:inherit;font-size:14px;resize:vertical;box-sizing:border-box;"></textarea>
-      </div>
-      <button class="btn btn-primary" onclick="generateNewsReport()" id="ng-btn"><i class="fa-solid fa-wand-magic-sparkles"></i> 리포트 생성</button>
-    </div>
-  </div>
-
-  <!-- 결과 영역 -->
-  <div id="ng-result" style="display:none;">
-    <div style="display:flex;gap:10px;margin:20px 0;">
-      <button class="btn btn-primary" id="ng-tab-html" onclick="switchNgTab('html')">HTML 코드</button>
-      <button class="btn btn-secondary" id="ng-tab-telegram" onclick="switchNgTab('telegram')">텔레그램 문구</button>
-      <button class="btn btn-secondary" id="ng-tab-archive" onclick="switchNgTab('archive')">아카이브 코드</button>
-    </div>
-    <div id="ng-html" class="ng-tab-content">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="color:#bf953f;font-size:13px;font-weight:700;">HTML 전체 코드</span>
-        <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px;" onclick="copyNg('ng-html-code')"><i class="fa-solid fa-copy"></i> 복사</button>
-      </div>
-      <textarea id="ng-html-code" rows="20" readonly style="width:100%;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;color:#aaa;font-family:monospace;font-size:12px;resize:vertical;box-sizing:border-box;"></textarea>
-    </div>
-    <div id="ng-telegram" class="ng-tab-content" style="display:none;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="color:#bf953f;font-size:13px;font-weight:700;">텔레그램 발송 문구</span>
-        <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px;" onclick="copyNg('ng-telegram-code')"><i class="fa-solid fa-copy"></i> 복사</button>
-      </div>
-      <textarea id="ng-telegram-code" rows="12" readonly style="width:100%;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;color:#aaa;font-family:inherit;font-size:14px;resize:vertical;box-sizing:border-box;"></textarea>
-    </div>
-    <div id="ng-archive" class="ng-tab-content" style="display:none;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="color:#bf953f;font-size:13px;font-weight:700;">아카이브 추가 코드</span>
-        <button class="btn btn-secondary" style="padding:6px 14px;font-size:12px;" onclick="copyNg('ng-archive-code')"><i class="fa-solid fa-copy"></i> 복사</button>
-      </div>
-      <textarea id="ng-archive-code" rows="8" readonly style="width:100%;background:#111;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;color:#aaa;font-family:monospace;font-size:13px;resize:vertical;box-sizing:border-box;"></textarea>
-    </div>
-  </div>
-</div>
 </div>
 
 <!-- 신규 고객 등록 모달 -->
@@ -685,8 +634,7 @@
       missingPBC: loadMissingPBC,
       paymentHistory: loadPaymentHistory,
       profitMgmt: loadProfitMgmt,
-      tradingReport: loadTradingReports,
-      newsGenerator: () => {} // 로드 불필요
+      tradingReport: loadTradingReports
     };
     if (loaders[page]) loaders[page]();
   };
@@ -705,11 +653,85 @@
     window.location.href = 'index.html';
   };
 
+  // ── 정산 일정 카드 (매달 반복 일정의 D-day 계산) ──────
+  function renderScheduleCards() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const y = today.getFullYear(), m = today.getMonth();
+
+    // 다음으로 돌아올 날짜 계산 (이번달 날짜가 지났으면 다음달)
+    function nextOccurrence(day) {
+      let target = new Date(y, m, day);
+      if (target < today) target = new Date(y, m+1, day);
+      return target;
+    }
+    // 기간(start~end)의 다음 발생 - 오늘이 기간 안이면 그 기간의 종료일 기준, 아니면 다음 시작일
+    function nextRangeInfo(startDay, endDay) {
+      const startThis = new Date(y, m, startDay);
+      const endThis = new Date(y, m, endDay);
+      if (today >= startThis && today <= endThis) {
+        return { inRange: true, target: endThis };
+      }
+      let target = startThis;
+      if (today > endThis) target = new Date(y, m+1, startDay);
+      return { inRange: false, target };
+    }
+
+    function dday(target) {
+      return Math.ceil((target - today) / (1000*60*60*24));
+    }
+    function fmt(d) {
+      return (d.getMonth()+1) + '월 ' + d.getDate() + '일';
+    }
+
+    const items = [];
+
+    // 1) 고객 리포트 발행일 - 매달 1일
+    const reportDate = nextOccurrence(1);
+    items.push({ label: '고객 리포트 발행', date: fmt(reportDate), dday: dday(reportDate), color: '#bf953f' });
+
+    // 2) 세금신고 기간 - 매달 5~10일
+    const taxInfo = nextRangeInfo(5, 10);
+    items.push({
+      label: '세금신고 기간',
+      date: taxInfo.inRange ? '진행중 (~' + fmt(taxInfo.target) + ')' : fmt(taxInfo.target) + '~',
+      dday: dday(taxInfo.target),
+      color: taxInfo.inRange ? '#00cc66' : '#ffc800',
+      ongoing: taxInfo.inRange
+    });
+
+    // 3) 고객 결제일 - 매달 5~10일
+    const payInfo = nextRangeInfo(5, 10);
+    items.push({
+      label: '고객 결제 기간',
+      date: payInfo.inRange ? '진행중 (~' + fmt(payInfo.target) + ')' : fmt(payInfo.target) + '~',
+      dday: dday(payInfo.target),
+      color: payInfo.inRange ? '#00cc66' : '#ffc800',
+      ongoing: payInfo.inRange
+    });
+
+    // 4) 정산일 - 매달 15일
+    const settleDate = nextOccurrence(15);
+    items.push({ label: '정산일', date: fmt(settleDate), dday: dday(settleDate), color: '#bf953f' });
+
+    let html = '';
+    items.forEach(it => {
+      const ddayLabel = it.dday === 0 ? '오늘' : (it.dday > 0 ? 'D-' + it.dday : '진행중');
+      html += `<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(191,149,63,0.15);border-radius:12px;padding:18px;">
+        <div style="font-size:12px;color:#888;font-weight:700;margin-bottom:8px;">${it.label}</div>
+        <div style="font-size:22px;font-weight:900;color:${it.color};margin-bottom:4px;">${ddayLabel}</div>
+        <div style="font-size:12px;color:#666;">${it.date}</div>
+      </div>`;
+    });
+    document.getElementById('schedule-cards').innerHTML = html;
+  }
+
   // ── 대시보드 ───────────────────────────────────────
   async function loadDashboard() {
     const today = new Date();
     document.getElementById('today-date').textContent =
       today.getFullYear() + '년 ' + (today.getMonth()+1) + '월 ' + today.getDate() + '일 기준';
+
+    renderScheduleCards();
 
     const customers = await getCached('customers', () => getAll('customers'));
     const now = new Date(); now.setHours(0,0,0,0);
@@ -1586,202 +1608,6 @@
     showToast('✅ 삭제 완료!');
     loadTradingReports();
   };
-
-  // ── 뉴스리포트 생성기 ─────────────────────────────
-  window.switchNgTab = function(tab) {
-    ['html','telegram','archive'].forEach(t => {
-      document.getElementById('ng-'+t).style.display = t===tab?'block':'none';
-      document.getElementById('ng-tab-'+t).className = t===tab?'btn btn-primary':'btn btn-secondary';
-    });
-  };
-
-  window.copyNg = function(id) {
-    const el = document.getElementById(id);
-    el.select(); document.execCommand('copy');
-    showToast('✅ 복사 완료!');
-  };
-
-  window.generateNewsReport = async function() {
-    const date = document.getElementById('ng-date').value.trim();
-    const imgUrl = document.getElementById('ng-img').value.trim();
-    const news = document.getElementById('ng-news').value.trim();
-    if (!date || !imgUrl || !news) { showToast('❌ 날짜, 이미지URL, 뉴스원문을 모두 입력해주세요'); return; }
-
-    const btn = document.getElementById('ng-btn');
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 생성 중...';
-    btn.disabled = true;
-
-    // 날짜 파싱 (2026.06.16 → 260616)
-    const parts = date.split('.');
-    const fileDate = parts[0].slice(2) + parts[1] + parts[2]; // 260616
-    const prevFile = getPrevFile(fileDate);
-
-    const systemPrompt = `당신은 GOLD WAVE(골드웨이브) 자동매매 서비스의 뉴스리포트 작성 전문가입니다.
-
-[브랜드 규칙]
-- 서비스명: GOLD WAVE (골드웨이브)
-- 모든 뉴스는 골드웨이브에 유리하게 긍정적으로 프레이밍
-- 부정적 금 시장 뉴스도 "매수 기회", "헤지 확인", "구조적 강점"으로 재해석
-- 과도한 수익 보장 표현 금지, "리스크 최소화 구조" 등 소프트한 표현 사용
-- 손실 제로 보장 언어 절대 금지
-
-[출력 형식 - JSON으로만 응답, 마크다운 백틱 없이]
-{
-  "headline": "아카이브 카드 제목 (20자 이내, 핵심 팩트 중심)",
-  "briefing_title": "오늘의 핵심 브리핑 제목 (30자 이내)",
-  "briefing_body": "브리핑 본문 HTML (2~3문장, <span class='neon-text'>강조</span>, <span class='point-focus'>강조2</span> 태그 활용)",
-  "vvip_1": "VVIP 전략 가이드 항목 1",
-  "vvip_2": "VVIP 전략 가이드 항목 2", 
-  "vvip_3": "VVIP 전략 가이드 항목 3",
-  "logic_body": "GOLDWAVE 알고리즘 증명 본문 HTML (2~3문단, 골드웨이브 강점 부각)",
-  "pop_card": "팝카드 인용문 (골드웨이브 신뢰 강화, 1~2문장)",
-  "insight_bar": "인사이트 바 텍스트 (핵심 키워드 한 줄)",
-  "telegram": "텔레그램 발송 문구 (이모지 포함, 5~7줄, 핵심만 간결하게, 마지막에 리포트 링크 자리표시자 [LINK] 포함)"
-}`;
-
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 3000,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: `날짜: ${date}\n\n뉴스 원문:\n${news}` }]
-        })
-      });
-      const data = await response.json();
-      const raw = data.content[0].text.replace(/```json|```/g,'').trim();
-      const result = JSON.parse(raw);
-
-      // HTML 생성
-      const htmlCode = buildNewsHtml(date, fileDate, imgUrl, result, prevFile);
-      const archiveCode = buildArchiveCode(date, fileDate, imgUrl, result.headline);
-      const telegramCode = result.telegram.replace('[LINK]', `https://goldwave-notice.github.io/${fileDate}.html`);
-
-      document.getElementById('ng-html-code').value = htmlCode;
-      document.getElementById('ng-telegram-code').value = telegramCode;
-      document.getElementById('ng-archive-code').value = archiveCode;
-      document.getElementById('ng-result').style.display = 'block';
-      switchNgTab('html');
-      showToast('✅ 리포트 생성 완료!');
-    } catch(e) {
-      showToast('❌ 생성 실패: ' + e.message);
-      console.error(e);
-    } finally {
-      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> 리포트 생성';
-      btn.disabled = false;
-    }
-  };
-
-  function getPrevFile(fileDate) {
-    // 이전 파일명은 수동으로 입력하거나 자동 계산 (간단히 하루 전)
-    const y = parseInt('20'+fileDate.slice(0,2));
-    const m = parseInt(fileDate.slice(2,4))-1;
-    const d = parseInt(fileDate.slice(4,6));
-    const prev = new Date(y,m,d-1);
-    const py = String(prev.getFullYear()).slice(2);
-    const pm = String(prev.getMonth()+1).padStart(2,'0');
-    const pd = String(prev.getDate()).padStart(2,'0');
-    return py+pm+pd;
-  }
-
-  function buildNewsHtml(date, fileDate, imgUrl, r, prevFile) {
-    const parts = date.split('.');
-    return `<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=1350">
-  <title>GOLD WAVE PREMIUM REPORT - ${fileDate}</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <style>
-    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-    html { -webkit-text-size-adjust: none; }
-    body { margin: 0; background-color: #0b0d11; font-family: 'Pretendard', sans-serif; color: #e0e0e0; display: flex; flex-direction: column; align-items: center; padding: 0 0 80px 0; overflow-x: hidden; min-width: 1350px; }
-    .header-sticky { position: fixed; top: 0; width: 100%; min-width: 1350px; background: rgba(26,29,35,0.95); border-bottom: 1px solid rgba(191,149,63,0.3); z-index: 1000; padding: 15px 0; text-align: center; backdrop-filter: blur(10px); }
-    .header-title { font-size: 13px; font-weight: 800; color: #bf953f; letter-spacing: 1px; }
-    .back-nav { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); text-decoration: none; color: #bf953f; font-size: 20px; transition: 0.3s; }
-    .back-nav:hover { filter: drop-shadow(0 0 8px #bf953f); transform: translateY(-50%) translateX(-3px); }
-    .container { width: 1350px; margin-top: 80px; }
-    .main-section { display: flex; gap: 40px; align-items: stretch; margin-bottom: 60px; }
-    .img-area { flex: 1; display: flex; }
-    .img-area img { width: 100%; height: 100%; border-radius: 20px; border: 1px solid #bf953f; object-fit: fill; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
-    .text-area { flex: 1.2; display: flex; flex-direction: column; gap: 20px; }
-    .briefing-part { flex: 1; background: rgba(255,255,255,0.02); padding: 40px; border-radius: 20px; border: 1px solid rgba(191,149,63,0.1); display: flex; flex-direction: column; justify-content: center; }
-    .vvip-strategy-box { flex: 1; background: #161a21; padding: 40px; border-radius: 20px; border: 1px solid rgba(191,149,63,0.4); border-left: 6px solid #bf953f; display: flex; flex-direction: column; justify-content: center; animation: goldenBreathing 1.8s infinite ease-in-out; }
-    .briefing-part h1, .vvip-title { color: #bf953f; font-size: 24px; margin: 0 0 20px 0; font-weight: 800; }
-    .briefing-part h1 { border-left: 6px solid #bf953f; padding-left: 15px; }
-    .vvip-list { padding-left: 20px; margin: 0; font-size: 16px; color: #bbb; line-height: 2.3; }
-    .vvip-list li { list-style: none; position: relative; margin-bottom: 12px; }
-    .vvip-list li::before { content: "▶"; color: #bf953f; font-size: 12px; position: absolute; left: -20px; top: 2px; }
-    .point-focus { font-weight: 800; color: #ffffff; background: linear-gradient(to top, rgba(0,255,0,0.45) 45%, transparent 45%); padding: 0 4px; border-radius: 2px; }
-    .neon-text { color: #00ff00; font-weight: 700; }
-    @keyframes goldenBreathing { 0%,100% { box-shadow: 0 0 15px rgba(191,149,63,0.1); border-color: rgba(191,149,63,0.4); } 50% { box-shadow: 0 0 40px rgba(191,149,63,0.5); border-color: rgba(252,246,186,0.8); } }
-    .scroll-indicator { text-align: center; margin-bottom: 40px; color: #bf953f; animation: blink 1.2s infinite; font-size: 22px; font-weight: 900; line-height: 1.0; }
-    @keyframes blink { 0%,100% { opacity: 0; transform: translateY(-5px); } 50% { opacity: 1; transform: translateY(5px); } }
-    .logic-section { width: 100%; background: #1a1e26; padding: 60px; border-radius: 25px; border-top: 5px solid #bf953f; box-sizing: border-box; text-align: left; }
-    .logic-title { font-size: 24px; font-weight: 800; color: #fcf6ba; margin-bottom: 40px; border-bottom: 1px solid rgba(191,149,63,0.1); padding-bottom: 20px; }
-    .logic-paragraph { margin-bottom: 40px; line-height: 2.3; font-size: 18px; color: #e5e5e5; }
-    .pop-card { background: #1e232d; padding: 35px; border-radius: 15px; box-shadow: inset 1px 1px 1px rgba(255,255,255,0.05), 8px 8px 25px rgba(0,0,0,0.5); border-top: 1px solid rgba(191,149,63,0.3); margin-top: 20px; animation: goldenBreathing 1.8s infinite ease-in-out; }
-    .insight-bar { background: linear-gradient(90deg, rgba(191,149,63,0.2), rgba(191,149,63,0.05)); padding: 30px; border-radius: 15px; border-left: 6px solid #bf953f; text-align: left; font-weight: 700; font-size: 20px; margin-top: 40px; }
-    .footer-counter { width: 1350px; margin-top: 80px; text-align: center; padding-bottom: 50px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 40px; }
-    .counter-label { font-size: 11px; color: #555; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
-  </style>
-</head>
-<body>
-<div class="header-sticky">
-  <a href="archive.html" class="back-nav"><i class="fa-solid fa-arrow-left"></i></a>
-  <div class="header-title">GOLD WAVE PREMIUM REPORT</div>
-</div>
-<div class="container">
-  <div class="main-section">
-    <div class="img-area"><img src="${imgUrl}" alt="${fileDate} NEWS"></div>
-    <div class="text-area">
-      <div class="briefing-part">
-        <h1>📌 오늘의 핵심 브리핑</h1>
-        <div style="margin-bottom:25px;padding-bottom:20px;border-bottom:1px solid rgba(191,149,63,0.15);">
-          <div style="color:#fcf6ba;font-size:21px;font-weight:800;line-height:1.5;">${r.briefing_title}</div>
-        </div>
-        <div style="font-size:16.5px;line-height:2.0;color:#ccc;">${r.briefing_body}</div>
-      </div>
-      <div class="vvip-strategy-box">
-        <div class="vvip-title">💡 VVIP 전략 가이드</div>
-        <ul class="vvip-list">
-          <li>${r.vvip_1}</li>
-          <li>${r.vvip_2}</li>
-          <li>${r.vvip_3}</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="scroll-indicator">v<br>v<br>v</div>
-  <div class="logic-section">
-    <div class="logic-title">📌 GOLDWAVE 알고리즘 증명: ${r.briefing_title}</div>
-    <div class="logic-paragraph">${r.logic_body}</div>
-    <div class="pop-card"><div style="font-size:19px;line-height:2.2;color:#fff;">${r.pop_card}</div></div>
-  </div>
-  <div class="insight-bar">✔ ${r.insight_bar}</div>
-</div>
-<div class="footer-counter">
-  <span class="counter-label">TODAY VIEWS : <span id="busuanzi_value_page_pv">0</span></span>
-</div>
-<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"><\/script>
-</body>
-</html>`;
-  }
-
-  function buildArchiveCode(date, fileDate, imgUrl, headline) {
-    const parts = date.split('.');
-    const displayDate = `${parts[0]}. ${parts[1]}. ${parts[2]}`;
-    return `<a href="https://goldwave-notice.github.io/${fileDate}.html" class="report-item">
-  <div class="report-info">
-    <span class="report-date">${displayDate}</span>
-    <span class="report-title">"${headline}"</span>
-  </div>
-  <span class="arrow">→</span>
-</a>`;
-  }
 
   // ── 초기 로드
   loadDashboard();
