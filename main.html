@@ -101,6 +101,7 @@
     <div class="nav-item" onclick="showPage('performance', this)"><i class="fa-solid fa-trophy"></i> 성과 현황</div>
     <div class="nav-item admin-only" onclick="showPage('missingPBC', this)"><i class="fa-solid fa-circle-exclamation"></i> 미수금 현황</div>
     <div class="nav-item admin-only" onclick="showPage('paymentHistory', this)"><i class="fa-solid fa-money-bill-transfer"></i> 성과금 입금 기록</div>
+    <div class="nav-item" onclick="showPage('analytics', this)"><i class="fa-solid fa-chart-pie"></i> 리포트 분석</div>
     <div class="nav-section">골드웨이브</div>
     <div class="nav-item" onclick="showPageOrDenied('profitMgmt', this)"><i class="fa-solid fa-image"></i> 수익현황 관리</div>
     <div class="nav-item" onclick="showPageOrDenied('tradingReport', this)"><i class="fa-solid fa-calendar-days"></i> 트레이딩 리포트 관리</div>
@@ -292,6 +293,24 @@
     <div class="section">
       <div class="section-title">입금 내역</div>
       <div id="payment-history-list"><div class="loading">불러오는 중...</div></div>
+    </div>
+  </div>
+  <!-- 리포트 분석 -->
+  <div id="page-analytics" class="page">
+    <div class="page-header"><div><h1>리포트 분석</h1><p>매출 트렌드 · 회원등급별 분포 · 성과금 지급현황</p></div></div>
+    <div class="section">
+      <div class="section-title">월별 매출 트렌드</div>
+      <div style="position:relative;height:280px;"><canvas id="trendChart"></canvas></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="section">
+        <div class="section-title">회원 등급별 분포</div>
+        <div style="position:relative;height:260px;"><canvas id="gradeChart"></canvas></div>
+      </div>
+      <div class="section">
+        <div class="section-title">성과금 지급현황 요약</div>
+        <div id="payment-summary"><div class="loading">불러오는 중...</div></div>
+      </div>
     </div>
   </div>
   <!-- 수익현황 관리 -->
@@ -633,6 +652,7 @@
       performance: loadPerformance,
       missingPBC: loadMissingPBC,
       paymentHistory: loadPaymentHistory,
+      analytics: loadAnalytics,
       profitMgmt: loadProfitMgmt,
       tradingReport: loadTradingReports
     };
@@ -1273,6 +1293,100 @@
     showToast('✅ 삭제 완료!');
     loadPaymentHistory();
   };
+
+  // ── 리포트 분석 ──────────────────────────────────
+  async function loadAnalytics() {
+    const [settlements, serverFees, customers, payments] = await Promise.all([
+      getCached('settlements', () => getAll('settlements')),
+      getCached('serverFees', () => getAll('serverFees')),
+      getCached('customers', () => getAll('customers')),
+      getCached('payments', () => getAll('payments'))
+    ]);
+
+    // 1) 월별 매출 트렌드
+    const 월별 = {};
+    settlements.forEach(r => {
+      const 월 = r.정산월; if (!월) return;
+      if (!월별[월]) 월별[월] = {월, 사용료:0, 성과금:0, 서버비:0};
+      월별[월].사용료 += Number(r.INC사용료)||0;
+      월별[월].성과금 += Number(r.INC성과금)||0;
+    });
+    serverFees.forEach(r => {
+      if (!r.정산월) return;
+      if (!월별[r.정산월]) 월별[r.정산월] = {월:r.정산월, 사용료:0, 성과금:0, 서버비:0};
+      월별[r.정산월].서버비 += Number(r.서버비금액)||0;
+    });
+    const trendData = Object.values(월별).sort((a,b) => a.월.localeCompare(b.월));
+
+    if (!window.Chart) {
+      await new Promise(resolve => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
+        s.onload = resolve;
+        document.head.appendChild(s);
+      });
+    }
+
+    if (window._trendChart) window._trendChart.destroy();
+    window._trendChart = new Chart(document.getElementById('trendChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: trendData.map(r=>r.월),
+        datasets: [
+          {label:'사용료', data:trendData.map(r=>r.사용료), borderColor:'#bf953f', backgroundColor:'rgba(191,149,63,0.1)', tension:0.3},
+          {label:'PBC 성과금', data:trendData.map(r=>r.성과금), borderColor:'#fcf6ba', backgroundColor:'rgba(252,246,186,0.1)', tension:0.3},
+          {label:'서버비', data:trendData.map(r=>r.서버비), borderColor:'#ff5050', backgroundColor:'rgba(255,80,80,0.1)', tension:0.3}
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#ccc'}}, tooltip:{callbacks:{label:c=>c.dataset.label+': ₩'+Number(c.raw).toLocaleString()}}},
+        scales:{x:{ticks:{color:'#888'},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#888',callback:v=>'₩'+v.toLocaleString()},grid:{color:'rgba(255,255,255,0.05)'}}}
+      }
+    });
+
+    // 2) 회원 등급별 분포
+    const gradeCount = {};
+    customers.forEach(c => {
+      if (!c.회원번호 || c.계약상태 !== '유효') return;
+      const g = c.등급 || '미지정';
+      gradeCount[g] = (gradeCount[g]||0) + 1;
+    });
+    const gradeLabels = Object.keys(gradeCount);
+    const gradeColors = ['#bf953f','#fcf6ba','#00cc66','#ff5050','#5599ff','#cc88ff'];
+
+    if (window._gradeChart) window._gradeChart.destroy();
+    window._gradeChart = new Chart(document.getElementById('gradeChart').getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: gradeLabels,
+        datasets: [{ data: gradeLabels.map(g=>gradeCount[g]), backgroundColor: gradeColors }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'bottom',labels:{color:'#ccc',font:{size:11}}}}
+      }
+    });
+
+    // 3) 성과금 지급현황 요약
+    let totalPaid = 0, totalUnpaid = 0, paidCount = 0, unpaidCount = 0;
+    payments.forEach(p => {
+      const amt = Number(p.입금금액)||0;
+      if (p.상태 === 'Complete') { totalPaid += amt; paidCount++; }
+      else { totalUnpaid += (Number(p.성과금총액)||0); unpaidCount++; }
+    });
+    document.getElementById('payment-summary').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:15px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(0,204,102,0.08);border-radius:10px;border-left:4px solid #00cc66;">
+          <span style="color:#ccc;font-size:13px;">지급 완료</span>
+          <span style="color:#00cc66;font-weight:800;font-size:16px;">₩${totalPaid.toLocaleString()} <span style="font-size:11px;color:#888;">(${paidCount}건)</span></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:rgba(255,200,0,0.08);border-radius:10px;border-left:4px solid #ffc800;">
+          <span style="color:#ccc;font-size:13px;">미지급</span>
+          <span style="color:#ffc800;font-weight:800;font-size:16px;">₩${totalUnpaid.toLocaleString()} <span style="font-size:11px;color:#888;">(${unpaidCount}건)</span></span>
+        </div>
+      </div>`;
+  }
 
   // ── 성과 보고서 탭 전환 ────────────────────────────
   window.showReportTab = function(tab) {
