@@ -222,12 +222,12 @@
         <div class="form-group"><label>정산월 *</label><input type="text" id="ri-month" placeholder="예: 2026.05"></div>
         <div class="form-group"><label>환율기준일</label><input type="text" id="ri-exdate" placeholder="예: 2026.05.31"></div>
         <div class="form-group"><label>환율 (원/USD)</label><input type="number" id="ri-exrate" placeholder="1450"></div>
-        <div class="form-group"><label>입금금액 (USD)</label><input type="number" id="ri-deposit" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>입금금액 (USD)</label><input type="number" id="ri-deposit" placeholder="0" step="0.01" oninput="autoCalcPerf()"></div>
         <div class="form-group"><label>지급크레딧 (USD)</label><input type="number" id="ri-credit" placeholder="0" step="0.01"></div>
-        <div class="form-group"><label>보너스+입금합계 (USD)</label><input type="number" id="ri-total" placeholder="0" step="0.01"></div>
-        <div class="form-group"><label>당월말잔고 (USD)</label><input type="number" id="ri-balance" placeholder="0" step="0.01"></div>
-        <div class="form-group"><label>월간수익률 (%)</label><input type="number" id="ri-rate" placeholder="0" step="0.01"></div>
-        <div class="form-group"><label>월간수익금 (USD)</label><input type="number" id="ri-profit" placeholder="0" step="0.01"></div>
+        <div class="form-group"><label>보너스+입금합계 (USD)</label><input type="number" id="ri-total" placeholder="0" step="0.01" oninput="autoCalcPerf()"></div>
+        <div class="form-group"><label>당월말잔고 (USD)</label><input type="number" id="ri-balance" placeholder="0" step="0.01" oninput="autoCalcPerf()"></div>
+        <div class="form-group"><label>월간수익률 (%) <span style="color:#00cc66;font-size:11px;">자동계산</span></label><input type="number" id="ri-rate" placeholder="자동계산" step="0.01" readonly style="background:#111;color:#00cc66;font-weight:800;"></div>
+        <div class="form-group"><label>월간수익금 (USD) <span style="color:#00cc66;font-size:11px;">자동계산</span></label><input type="number" id="ri-profit" placeholder="자동계산" step="0.01" readonly style="background:#111;color:#00cc66;font-weight:800;"></div>
         <div class="form-group"><label>거래횟수</label><input type="number" id="ri-trades" placeholder="0"></div>
         <div class="form-group"><label>승률 (%)</label><input type="number" id="ri-winrate" placeholder="0" step="0.01"></div>
         <div class="form-group"><label>MDD (%)</label><input type="number" id="ri-mdd" placeholder="0" step="0.01"></div>
@@ -1404,6 +1404,18 @@
   window.autoFillReportName = async function() {
     const c = await getCustomerByID(document.getElementById('ri-id').value);
     document.getElementById('ri-name').value = c ? c.회원명 : '';
+  };
+
+  window.autoCalcPerf = function() {
+    const deposit = Number(document.getElementById('ri-deposit').value) || 0;
+    const total = Number(document.getElementById('ri-total').value) || 0;
+    const balance = Number(document.getElementById('ri-balance').value) || 0;
+    if (total > 0 && balance > 0) {
+      const profit = Math.round((balance - total) * 100) / 100;
+      const rate = deposit > 0 ? Math.round((profit / deposit) * 10000) / 100 : 0;
+      document.getElementById('ri-profit').value = profit;
+      document.getElementById('ri-rate').value = rate;
+    }
   };
 
   window.submitReportInputOnly = async function() {
