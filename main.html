@@ -223,8 +223,8 @@
         <div class="form-group"><label>환율기준일</label><input type="text" id="ri-exdate" placeholder="예: 2026.05.31"></div>
         <div class="form-group"><label>환율 (원/USD)</label><input type="number" id="ri-exrate" placeholder="1450"></div>
         <div class="form-group"><label>입금금액 (USD)</label><input type="number" id="ri-deposit" placeholder="0" step="0.01" oninput="autoCalcPerf()"></div>
-        <div class="form-group"><label>지급크레딧 (USD)</label><input type="number" id="ri-credit" placeholder="0" step="0.01"></div>
-        <div class="form-group"><label>보너스+입금합계 (USD)</label><input type="number" id="ri-total" placeholder="0" step="0.01" oninput="autoCalcPerf()"></div>
+        <div class="form-group"><label>지급크레딧 (USD)</label><input type="number" id="ri-credit" placeholder="0" step="0.01" oninput="autoCalcPerf()"></div>
+        <div class="form-group"><label>보너스+입금합계 (USD) <span style="color:#00cc66;font-size:11px;">자동계산</span></label><input type="number" id="ri-total" placeholder="자동계산" step="0.01" readonly style="background:#111;color:#00cc66;font-weight:800;"></div>
         <div class="form-group"><label>당월말잔고 (USD)</label><input type="number" id="ri-balance" placeholder="0" step="0.01" oninput="autoCalcPerf()"></div>
         <div class="form-group"><label>월간수익률 (%) <span style="color:#00cc66;font-size:11px;">자동계산</span></label><input type="number" id="ri-rate" placeholder="자동계산" step="0.01" readonly style="background:#111;color:#00cc66;font-weight:800;"></div>
         <div class="form-group"><label>월간수익금 (USD) <span style="color:#00cc66;font-size:11px;">자동계산</span></label><input type="number" id="ri-profit" placeholder="자동계산" step="0.01" readonly style="background:#111;color:#00cc66;font-weight:800;"></div>
@@ -894,18 +894,41 @@
   async function loadHistory(targetId, filterFn) {
     const data = await getCached('history', () => getAll('history'));
     const filtered = data.filter(filterFn);
-    let html = '<table class="data-table"><tr><th>발행일</th><th>정산월</th><th>수신인</th><th>금액</th><th>링크</th></tr>';
+    const isReport = targetId === 'report-history';
+    let html = `<table class="data-table"><tr><th>발행일</th><th>정산월</th><th>수신인</th><th>금액</th><th>링크</th>${isReport ? '<th>삭제</th>' : ''}</tr>`;
     filtered.forEach(r => {
-      // 발행일 포맷 정리 (Date 객체 또는 영문 날짜 → 한글)
       let 발행일표시 = r.발행일 || '';
       try {
         const d = new Date(발행일표시);
         if (!isNaN(d)) 발행일표시 = d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일';
       } catch(e) {}
-      html += `<tr><td>${발행일표시}</td><td>${r.정산월}</td><td>${r.수신인}</td><td>₩${Number(r.금액).toLocaleString()}</td><td><a href="${r.링크}" target="_blank" style="color:#bf953f;">보기 →</a></td></tr>`;
+      const deleteBtn = isReport ? `<td><button class="btn btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="deleteReport('${r._docId}','${r.수신인}','${r.정산월}')"><i class="fa-solid fa-trash"></i></button></td>` : '';
+      html += `<tr><td>${발행일표시}</td><td>${r.정산월}</td><td>${r.수신인}</td><td>₩${Number(r.금액).toLocaleString()}</td><td><a href="${r.링크}" target="_blank" style="color:#bf953f;">보기 →</a></td>${deleteBtn}</tr>`;
     });
     document.getElementById(targetId).innerHTML = !filtered.length ? '<div class="empty">발행된 내역이 없습니다</div>' : html + '</table>';
   }
+
+  window.deleteReport = async function(docId, name, month) {
+    if (!confirm(name + ' ' + month + ' 보고서를 삭제하시겠습니까?')) return;
+    try {
+      // 1) Firestore 삭제
+      const { deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await deleteDoc(doc(db, 'history', docId));
+
+      // 2) Apps Script → 시트 삭제
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({action: 'deleteHistory', docId, name, month}),
+        headers: {'Content-Type': 'text/plain;charset=utf-8'}
+      });
+
+      delete cache['history'];
+      showToast('✅ 삭제 완료!');
+      loadReportHistory();
+    } catch(e) {
+      showToast('❌ 삭제 실패: ' + e.message);
+    }
+  };
 
   function loadPayslipHistory() { loadHistory('payslip-history', r => r.수신인 === '이영웅'); }
   function loadPartnerHistory() { loadHistory('partner-history', r => r.수신인 === '강민성' || r.수신인 === '차윤재'); }
@@ -1393,6 +1416,13 @@
     const inputSection = document.getElementById('report-input-section');
     const historySection = document.getElementById('report-history-section');
     if (tab === 'input') {
+      // 폼 초기화
+      ['ri-id','ri-name','ri-month','ri-exdate','ri-exrate','ri-deposit','ri-credit',
+       'ri-total','ri-balance','ri-rate','ri-profit','ri-trades','ri-winrate','ri-mdd',
+       'ri-firstdate','ri-firstrate'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
       inputSection.style.display = 'block';
       historySection.style.display = 'none';
     } else {
@@ -1408,8 +1438,14 @@
 
   window.autoCalcPerf = function() {
     const deposit = Number(document.getElementById('ri-deposit').value) || 0;
-    const total = Number(document.getElementById('ri-total').value) || 0;
+    const credit = Number(document.getElementById('ri-credit').value) || 0;
     const balance = Number(document.getElementById('ri-balance').value) || 0;
+
+    // 보너스+입금합계 = 입금금액 + 지급크레딧
+    const total = Math.round((deposit + credit) * 100) / 100;
+    document.getElementById('ri-total').value = total || '';
+
+    // 월간수익금/수익률 계산
     if (total > 0 && balance > 0) {
       const profit = Math.round((balance - total) * 100) / 100;
       const rate = deposit > 0 ? Math.round((profit / deposit) * 10000) / 100 : 0;
