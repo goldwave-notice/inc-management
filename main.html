@@ -895,17 +895,41 @@
     const data = await getCached('history', () => getAll('history'));
     const filtered = data.filter(filterFn);
     const isReport = targetId === 'report-history';
-    let html = `<table class="data-table"><tr><th>발행일</th><th>정산월</th><th>수신인</th><th>금액</th><th>링크</th>${isReport ? '<th>삭제</th>' : ''}</tr>`;
+
+    if (!filtered.length) {
+      document.getElementById(targetId).innerHTML = '<div class="empty">발행된 내역이 없습니다</div>';
+      return;
+    }
+
+    // 정산월 기준 내림차순 정렬
+    filtered.sort((a, b) => String(b.정산월).localeCompare(String(a.정산월)));
+
+    // 정산월별 그룹핑
+    const groups = {};
     filtered.forEach(r => {
-      let 발행일표시 = r.발행일 || '';
-      try {
-        const d = new Date(발행일표시);
-        if (!isNaN(d)) 발행일표시 = d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일';
-      } catch(e) {}
-      const deleteBtn = isReport ? `<td><button class="btn btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="deleteReport('${r._docId}','${r.수신인}','${r.정산월}')"><i class="fa-solid fa-trash"></i></button></td>` : '';
-      html += `<tr><td>${발행일표시}</td><td>${r.정산월}</td><td>${r.수신인}</td><td>₩${Number(r.금액).toLocaleString()}</td><td><a href="${r.링크}" target="_blank" style="color:#bf953f;">보기 →</a></td>${deleteBtn}</tr>`;
+      const key = r.정산월 || '기타';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(r);
     });
-    document.getElementById(targetId).innerHTML = !filtered.length ? '<div class="empty">발행된 내역이 없습니다</div>' : html + '</table>';
+
+    let html = '';
+    Object.keys(groups).sort((a,b) => b.localeCompare(a)).forEach(month => {
+      html += `<div style="margin-bottom:25px;">
+        <div style="font-size:13px;font-weight:800;color:#bf953f;letter-spacing:2px;padding:10px 0 8px;border-bottom:1px solid rgba(191,149,63,0.2);margin-bottom:10px;">── ${month} ──────────────────</div>
+        <table class="data-table"><tr><th>발행일</th><th>수신인</th><th>금액</th><th>링크</th>${isReport ? '<th>삭제</th>' : ''}</tr>`;
+      groups[month].forEach(r => {
+        let 발행일표시 = r.발행일 || '';
+        try {
+          const d = new Date(발행일표시);
+          if (!isNaN(d)) 발행일표시 = d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일';
+        } catch(e) {}
+        const deleteBtn = isReport ? `<td><button class="btn btn-secondary" style="padding:5px 10px;font-size:11px;" onclick="deleteReport('${r._docId}','${r.수신인}','${r.정산월}')"><i class="fa-solid fa-trash"></i></button></td>` : '';
+        html += `<tr><td>${발행일표시}</td><td>${r.수신인}</td><td>₩${Number(r.금액).toLocaleString()}</td><td><a href="${r.링크}" target="_blank" style="color:#bf953f;">보기 →</a></td>${deleteBtn}</tr>`;
+      });
+      html += '</table></div>';
+    });
+
+    document.getElementById(targetId).innerHTML = html;
   }
 
   window.deleteReport = async function(docId, name, month) {
@@ -1172,7 +1196,7 @@
       await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         body: JSON.stringify({action: 'addPerformance', ...perfData}),
-        headers: {'Content-Type': 'application/json'}
+        headers: {'Content-Type': 'text/plain;charset=utf-8'}
       });
     } catch(e) { console.warn('시트 동기화 실패:', e); }
 
@@ -1503,7 +1527,7 @@
       await fetch(APPS_SCRIPT_URL, {
         method:'POST',
         body:JSON.stringify({action:'addPerformance',...perfData}),
-        headers:{'Content-Type':'application/json'}
+        headers:{'Content-Type':'text/plain;charset=utf-8'}
       });
     } catch(e) { console.warn('시트 동기화 실패:', e); }
     delete cache['performance'];
